@@ -1,0 +1,9 @@
+
+# Places
+.places/keys
+places.yaml
+
+# Places - generated environments
+.env.prod
+.env.dev
+.env

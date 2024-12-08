@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+# Define the path to the encryption key file
+KEY_FILE=".env-enc/key"
+
+# Define plaintext and encrypted files using parallel arrays
+PLAINTEXT_FILES=(
+  ".env"
+  ".env.dev"
+  ".env.prod"
+)
+
+ENCRYPTED_FILES=(
+  ".env-enc/.env.enc"
+  ".env-enc/.env.dev.enc"
+  ".env-enc/.env.prod.enc"
+)
+
+echo "Starting post-checkout decryption process..."
+
+# Debug: List the files to decrypt
+echo "Encrypted files to decrypt:"
+for file in "${ENCRYPTED_FILES[@]}"; do
+  echo "  - $file"
+done
+
+echo "Plaintext files to generate:"
+for file in "${PLAINTEXT_FILES[@]}"; do
+  echo "  - $file"
+done
+
+# Check if the encryption key file exists
+if [ ! -f "$KEY_FILE" ]; then
+  echo "Error: Encryption key file '$KEY_FILE' does not exist."
+  echo "Please ensure the key file is present to decrypt environment files."
+  exit 1
+fi
+
+# Read the encryption key from the key file and trim whitespace
+ENCRYPTION_KEY=$(tr -d '[:space:]' < "$KEY_FILE")
+
+if [ -z "$ENCRYPTION_KEY" ]; then
+  echo "Error: Encryption key is empty."
+  exit 1
+fi
+
+# Verify that the encryption key is exactly 32 characters (256 bits) for AES-256
+KEY_LENGTH=${#ENCRYPTION_KEY}
+if [ "$KEY_LENGTH" -ne 32 ]; then
+  echo "Error: Encryption key must be exactly 32 characters long for AES-256-ECB."
+  exit 1
+fi
+
+# Function to decrypt a single value
+decrypt_value() {
+  local encrypted_value="$1"
+  local decrypted_value
+
+  # Remove the ENC() wrapper if present
+  encrypted_value="${encrypted_value#ENC(}"
+  encrypted_value="${encrypted_value%)}"
+
+  # Decrypt the value
+  decrypted_value=$(echo "$encrypted_value" | base64 --decode | openssl enc -d -aes-256-ecb -nosalt -pbkdf2 -iter 100000 -pass pass:"$ENCRYPTION_KEY" 2>/dev/null)
+
+  # Check if decryption was successful
+  if [ $? -ne 0 ]; then
+    echo "Error: Decryption failed for encrypted value '$encrypted_value'. Please check your encryption key."
+    exit 1
+  fi
+
+  echo "$decrypted_value"
+}
+
+# Function to decrypt a single .env.enc file to .env
+decrypt_env_file() {
+  local encrypted_file="$1"
+  local plaintext_file="$2"
+
+  if [ ! -f "$encrypted_file" ]; then
+    echo "Warning: Encrypted file '$encrypted_file' does not exist. Skipping decryption for this file."
+    return
+  fi
+
+  echo "Decrypting '$encrypted_file' to '$plaintext_file'..."
+
+  # Create or empty the plaintext file
+  > "$plaintext_file"
+
+  # Read the encrypted file line by line
+  while IFS= read -r line || [ -n "$line" ]; do
+    # If the line is empty or a comment, write it as-is
+    if [[ -z "$line" || "$line" =~ ^# ]]; then
+      echo "$line" >> "$plaintext_file"
+      continue
+    fi
+
+    # Check if the line contains an equals sign
+    if [[ "$line" == *"="* ]]; then
+      # Split the line into key and value
+      IFS='=' read -r key value <<< "$line"
+
+      # Trim whitespace
+      key=$(echo "$key" | xargs)
+      value=$(echo "$value" | xargs)
+
+      # Check if the value is encrypted
+      if [[ "$value" =~ ^ENC\(.+\)$ ]]; then
+        # Decrypt the value
+        decrypted_value=$(decrypt_value "$value")
+
+        # Write the decrypted key-value pair
+        echo "$key=$decrypted_value" >> "$plaintext_file"
+
+        echo "  - Decrypted key: $key"
+      else
+        # If the value is not encrypted, write it as-is
+        echo "$line" >> "$plaintext_file"
+      fi
+    else
+      # If the line doesn't contain an equals sign, write it as-is
+      echo "$line" >> "$plaintext_file"
+    fi
+  done < "$encrypted_file"
+
+  echo "  - Successfully decrypted '$plaintext_file'."
+}
+
+# Iterate over the encrypted files and decrypt them
+for index in "${!ENCRYPTED_FILES[@]}"; do
+  ENCRYPTED_FILE="${ENCRYPTED_FILES[$index]}"
+  PLAINTEXT_FILE="${PLAINTEXT_FILES[$index]}"
+
+  decrypt_env_file "$ENCRYPTED_FILE" "$PLAINTEXT_FILE"
+done
+
+echo "Post-checkout decryption completed successfully."
+exit 0

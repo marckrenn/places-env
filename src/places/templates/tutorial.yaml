@@ -1,0 +1,47 @@
+
+keys:
+  default: .places/keys/default # Required
+#   prod: .places/keys/prod # Run `places key create <key-name>` to create a new key
+#   dev: .places/keys/dev
+#   test: .places/keys/test
+
+environments:
+
+  local:
+    filepath: .env
+    watch: true # Autogenerates .env file when running `places watch start (--daemon or -d)`
+    # If no key is explicitly defined, the default key will be used for en- / decryption
+
+  development:
+    filepath: .env.dev
+    alias: [dev]
+
+  production:
+    filepath: .env.prod
+    alias: [prod]
+    # key: prod # Encrypt all values for .env.dev file with this key (needs to be defined in keys)
+
+variables:
+
+  PROJECT_NAME: your-project-name # Shorthand for setting a variable in all environments
+
+  HOST: localhost
+
+  PORT:
+    local: 8000
+    dev: 8001
+    prod:
+      value: 8002
+      unencrypted: true # Explicitly not encrypting a value
+  
+  IP: '{{ HOST }}:{{ PORT }}' # Using variables in other variables
+
+  DOMAIN:
+    dev: '{{ PROJECT_NAME }}.foo.dev' # Substitutes PROJECT_NAME with your-project-name when generating .env files (places generate environments <env> or --all)
+    prod: '{{ PROJECT_NAME }}.foo.com'
+  
+  JSON_MULTILINE: |-
+    {
+      "key1": "value1",
+      "key2": "value2"
+    }

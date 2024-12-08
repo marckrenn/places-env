@@ -1,0 +1,167 @@
+
+settings:
+  cryptography:
+    iterations: 1
+
+keys:
+  default: .places/keys/default
+  dev: .places/keys/dev
+  prod: .places/keys/prod
+  test: .places/keys/test
+
+environments:
+  local:
+    filepath: .env
+    watch: true
+  development:
+    filepath: .env.dev
+    alias: [dev]
+    key: dev
+    watch: true
+  production:
+    filepath: .env.prod
+    alias: [prod]
+    key: prod
+    watch: true
+
+variables:
+
+  # -----------
+  # Setting values for all environments using shorthand
+  # -----------
+
+  STRING_SHORTHAND: String for all envs encrypted with env key or fallback key # comment
+
+  INT_SHORTHAND: 1337 # comment
+
+  FLOAT_SHORTHAND: 13.37 # comment
+
+  KV_SHORTHAND: '{"key": "value"}' # comment
+
+  STRING_LIST_SHORTHAND: [test1, test2] # comment
+
+  INT_LIST_SHORTHAND: [1,2,3,4] # comment
+
+  STRING_SHORTHAND_WITH_EXPLICIT_KEY: # comment
+    value: Encrypted with test key
+    key: test # comment
+  
+  UNENCRYPTED_STRING_SHORTHAND: # comment
+    value: This shouldn't be encrypted for all envs
+    unencrypted: true # comment
+
+
+  # -----------
+  # Setting values per environment using keys set in environments
+  # -----------
+
+  STRING_PER_ENV: # comment
+    local: local  # comment
+    dev: dev # comment
+    prod: prod # comment
+
+  INT_PER_ENV: # comment
+    local: 1 # comment
+    dev: 2 # comment
+    prod: 3 # comment
+
+  INT_LIST_PER_ENV: # comment
+    local: [1,2,3] # comment
+    dev: [1,2,3] # comment
+    prod: [1,2,4] # comment
+
+  FLOAT_PER_ENV: # comment
+    local: 1.1 # comment
+    dev: 2.2  # comment
+    prod: 3.3 # comment
+
+  STRINGS_FOR_SOME_ENVS: # comment
+    dev: dev # comment
+    prod: prod # comment
+
+  STRINGS_PER_ENV_PROD_UNENCRYPTED: # comment
+    local: This should be encrypted with local key  # comment
+    dev: This should be encrypted with dev key # comment
+    prod: # comment
+      value: This shouldn't be encrypted for prod env # comment
+      unencrypted: true # comment
+
+  INTEGER_PER_VALUE_WITH_EXPLICIT_KEY: # comment
+    local: # comment
+      value: 1 # comment
+      key: test # comment
+    prod:
+      value: 2
+      key: test
+    dev:
+      value: 3
+      key: test
+
+
+  # -----------
+  # String templating
+  # -----------
+
+  STRING_TEMPLATING_SHORTHAND: '${STRING_SHORTHAND_WITH_EXPLICIT_KEY} (${STRING_PER_ENV})' # comment
+
+  STRING_TEMPLATING_PER_ENV: # comment
+    local: '${STRING_SHORTHAND} ${STRING_PER_ENV}' # comment
+    dev: '${STRING_SHORTHAND} ${STRING_PER_ENV }' # comment
+    prod: '${STRING_SHORTHAND} ${STRING_PER_ENV}' # comment
+
+  STRING_LIST_TEMPLATING_SHORTHAND: [1, '${INT_SHORTHAND}', {'key':'value'}, '${STRING_SHORTHAND_WITH_EXPLICIT_KEY}', '${STRING_PER_ENV}'] # comment
+
+  # -----------
+  # Multiline values
+  # -----------
+
+  MULTILINE_KV_PER_ENV: # comment
+    # comment
+    local: | # comment
+          {
+            "key1": "value1",
+            "key2": "value2"
+          }
+    dev: |
+          {
+            'key1': 'value1',
+            'key2': 'value2'
+          }
+    prod: |
+          {
+            'key1': 'value1',
+            'key2': 'value2'
+          }
+
+
+  MULTILINE_KV_FOR_SOME_ENVS_WITH_EPXLICIT_KEY: # comment
+    # comment
+    local:
+      value: |
+          {
+            "key1": "value1",
+            "key2": "value2"
+          }
+      key: test
+    dev:
+      value: |
+          {
+            'key1': 'value1',
+            'key2': 'value2'
+          }
+      key: test
+    prod:
+      value: |
+          {
+            'key1': 'value1',
+            'key2': 'value2'
+          }
+      key: test
+
+  MULTILINE_KV_FOR_PROD_WITH_STRING_TEMPLATING_AND_EXPLICIT_KEY: # comment
+    prod: # comment
+      value: |
+          {
+          "INT_PER_ENV_PROD": {{ INT_PER_ENV }}
+          }
+      key: test # comment

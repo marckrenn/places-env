@@ -1,0 +1,13 @@
+click==8.1.*
+pyyaml==6.0.*
+watchdog==6.0.*
+cryptography==43.0.*
+psutil==6.1.*
+
+[dev]
+pytest==8.3.*
+sphinx==8.1.*
+sphinx-click==6.0.*
+sphinx-markdown-builder>=0.6.7
+black==24.10.*
+pyflakes==3.2.*

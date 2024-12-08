@@ -1,0 +1,51 @@
+[project]
+name = "places-env"
+dynamic = ["version"]
+description = ".envs for humans"
+readme = { file = "README.md", content-type = "text/markdown" }
+license = { file = "LICENSE" }
+keywords = ["environments", "environment variables", "secrets", "env", "tool", "infisical", "dotenv", "hashicorp", "vault"]
+authors = [{ name = "Marc Krenn"}]
+maintainers = [{ name = "Marc Krenn"}]
+requires-python = ">=3.11"
+dependencies = [
+    "click==8.1.*",
+    "pyyaml==6.0.*",
+    "watchdog==6.0.*",
+    "cryptography==43.0.*",
+    "psutil==6.1.*",
+    "ruamel.yaml==0.18.*"
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha"
+]
+
+[project.urls]
+homepage = "https://github.com/marckrenn/places"
+repository = "https://github.com/marckrenn/places"
+issues = "https://github.com/marckrenn/places/issues"
+
+[project.scripts]
+places = "places.cli:cli"
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.*",
+    "sphinx==8.1.*",
+    "sphinx-click==6.0.*",
+    "sphinx-markdown-builder>=0.6.7",
+    "black==24.10.*",
+    "pyflakes==3.2.*",
+]
+
+[build-system]
+requires = ["setuptools>=61", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+version_scheme = "post-release"
+local_scheme = "no-local-version"

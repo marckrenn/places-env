@@ -1,4 +1,57 @@
-# places-env: securely version control environment files
+Metadata-Version: 2.1
+Name: places-env
+Version: 1.0.0.post48
+Summary: .envs for humans
+Author: Marc Krenn
+Maintainer: Marc Krenn
+License: MIT License
+        
+        Copyright (c) 2024 Marc Krenn
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+        
+Project-URL: homepage, https://github.com/marckrenn/places
+Project-URL: repository, https://github.com/marckrenn/places
+Project-URL: issues, https://github.com/marckrenn/places/issues
+Keywords: environments,environment variables,secrets,env,tool,infisical,dotenv,hashicorp,vault
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.11
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Development Status :: 3 - Alpha
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: click==8.1.*
+Requires-Dist: pyyaml==6.0.*
+Requires-Dist: watchdog==6.0.*
+Requires-Dist: cryptography==43.0.*
+Requires-Dist: psutil==6.1.*
+Provides-Extra: dev
+Requires-Dist: pytest==8.3.*; extra == "dev"
+Requires-Dist: sphinx==8.1.*; extra == "dev"
+Requires-Dist: sphinx-click==6.0.*; extra == "dev"
+Requires-Dist: sphinx-markdown-builder>=0.6.7; extra == "dev"
+Requires-Dist: black==24.10.*; extra == "dev"
+Requires-Dist: pyflakes==3.2.*; extra == "dev"
+
+# places-env – securely version control, sync environment files
 > **Note:**  
 > _places-env_ is currently a proof of concept (PoC) and is **not ready for use in public projects or production environments**. Use it cautiously and only with private repositories.  
 > If you appreciate the ideas behind _places-env_, consider contributing by submitting pull requests!

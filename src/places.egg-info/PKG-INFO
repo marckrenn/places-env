@@ -1,57 +1,68 @@
-# places-env: securely version control environment files
+Metadata-Version: 2.1
+Name: places
+Version: 0.1.0
+Summary: .envs for humans
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: click==8.1.*
+Requires-Dist: pyyaml==6.0.*
+Requires-Dist: watchdog==6.0.*
+Requires-Dist: cryptography==43.0.*
+Requires-Dist: psutil==6.1.*
+Provides-Extra: dev
+Requires-Dist: pytest==8.3.*; extra == "dev"
+Requires-Dist: sphinx==8.1.*; extra == "dev"
+Requires-Dist: sphinx-click==6.0.*; extra == "dev"
+Requires-Dist: sphinx-markdown-builder>=0.6.7; extra == "dev"
+Requires-Dist: black==24.10.*; extra == "dev"
+
+# places - _.envs for humans_
 > **Note:**  
-> _places-env_ is currently a proof of concept (PoC) and is **not ready for use in public projects or production environments**. Use it cautiously and only with private repositories.  
-> If you appreciate the ideas behind _places-env_, consider contributing by submitting pull requests!
+> _places_ is currently a proof of concept (PoC) and is **not ready for use in public projects or production environments**. Use it cautiously and only with private repositories.  
+> If you appreciate the ideas behind _places_, consider contributing by submitting pull requests!
 
-## Motivation / The heck is _places-env_?
+## Motivation / What is _places_?
 
-![Schematic overview of places](./images/places-dark.svg#gh-dark-mode-only)
-![Schematic overview of places](./images/places-light.svg#gh-light-mode-only)
-
-- _places-env_ is a self-contained, completely free open-source (FOSS) alternative to [HashiCorp Vault](https://www.hashicorp.com/products/vault), [Infisical](https://infisical.com/), [dotenv-vault](https://github.com/dotenv-org/dotenv-vault) and [sops](https://github.com/getsops/sops).  
-- Leverages a single source of truth (SSOT) [`places.yaml`](#placesyaml) for deriving multiple environment files.
-- Similar to [sops](https://github.com/getsops/sops), _places-env_ encrypts only the values in [`places.yaml`](#placesyaml), resulting in [`places.enc.yaml`](#placesencyaml), which can be securely checked into git:  
+- A self-contained, completely free and open-source (FOSS) alternative to [HashiCorp Vault](https://www.hashicorp.com/products/vault), [Infisical](https://infisical.com/), [dotenv-vault](https://github.com/dotenv-org/dotenv-vault) and [sops](https://github.com/getsops/sops).  
+- Offers a single source of truth ([`places.yaml`](#placesyaml)) for generating `.env` files for multiple environments. 
+- Similar to [sops](https://github.com/getsops/sops), _places_ encrypts only the values in [`places.yaml`](#placesyaml), resulting in [`places.enc.yaml`](#placesencyaml)  which can be securely checked into git:  
   - Congrats, your SSOT is now version-controlled 🎉
   - Always synchronized with collaborators
   - Fully in-sync with branches and tags (try doing that with [Infisical](https://infisical.com/) & co. 😉) 
-  - Changes remain 'human-trackable' — even when values are encrypted
-  - Contrary to [sops](https://github.com/getsops/sops), encryption keys can be assigned either per environment or on a per-value basis
-- Provides a [straightforward setup](#getting-started) with no dependency on external services or libraries.  
-- [`places watch start`](#watch-start) (persistently) tracks changes in [`places.yaml`](#placesyaml)/[`places.enc.yaml`](#placesencyaml) and automatically handles [encryption](#encrypt), [decryption](#decrypt), [keeps `.gitignore` up-to-date](#sync-gitignore), and [auto-updates](#generate-environment) environment files. So it's essnetially _set and forget_.
+  - Changes remain 'human-trackable' — even when values are encrypted!
+- Provides a [dead-simple setup](#getting-started) with no dependency on external services or libraries.  
+- [`places watch start`](#watch-start) (persistently) tracks changes in [`places.yaml`](#placesyaml) and automatically handles [encryption](#encrypt), [decryption](#decrypt), [keeps `.gitignore` up-to-date](#sync-gitignore), and [`auto-updates`](#generate-environment) `.env` files.
 
-<details>
-
-<summary>Fallback Image (for Github Mobile users)</summary>
-
-![Schematic overview of places](./images/places-dark.png)
-
-</details>
 
 ## Getting started
 
-1. **Install _places-env_:**
+1. **Install _places_:**
 
 - via [pypi](https://pypi.org/):
 
-    `pip install -i https://test.pypi.org/simple/ places-env`
+    `pip install places` (TODO)
+
+- or via [Homebrew](https://brew.sh/):
+
+    `brew install places` (TODO)
 
 2. **Init project:** In terminal
   - `cd` into your project  
   - Run one of the following commands:  
-    - [`places init`](#init): Creates an empty [`places.yaml`](#placesyaml), generates a default crypto key at `.places/keys/default`
+    - [`places init`](#init): Creates an empty [`places.yaml`](#placesyaml).  
     - [`places init --template min`](#init): Initializes with a minimal template ([view content](src/places/templates/min.yaml)).  
     - [`places init --tutorial`](#init): Initializes with a tutorial template ([view content](src/places/templates/tutorial.yaml)).
 
 3. **Modify [`places.yaml`](#placesyaml)**:
   - Use your preferred text editor  
-  - Or modify it using the [_places-env_ CLI](#places-cli-documentation)
+  - Or modify it using the [_places_ CLI](#places-cli-documentation)
 
 4. **Track changes:**
   - Use [`places watch start (optionally: --daemon, --service)`](#watch-start) (recommended)  
   - Alternatively, use [`places encrypt`](#encrypt) and [`places sync gitignore`](#sync-gitignore). This will automatically add all necessary entries to `.gitignore`.
 
-5. **Generate environment files:**
-  - If [`places watch start`](#watch-start) is already running, environments with property `watch: true` will be (re)generated whenever [`places.yaml`](#placesyaml) is updated.  
+5. **Generate `.env` files:**
+  - If [`places watch start`](#watch-start) is already running, environments with the property `watch: true` set will be (re)generated whenever [`places.yaml`](#placesyaml) is updated.  
   - Or use [`places generate environment --all`](#generate-environment) to manually regenerate all environment files.
 
 6. **Commit [`places.enc.yaml`](#placesencyaml)**
@@ -60,14 +71,17 @@
   - If [`places watch start`](#watch-start) is already running, [`places.enc.yaml`](#placesencyaml) will automatically be decrypted into [`places.yaml`](#placesyaml) after switching branches.  
   - Otherwise, run [`places decrypt`](#decrypt) to manually derive [`places.yaml`](#placesyaml) from [`places.enc.yaml`](#placesencyaml).
 
-8. **Key exchange:**
-  - If you're working with collaborators, **securely** share your crypto keys located in `.places/keys` with them.
+8. **"Key exchange":**
+  - If you're working with collaborators, securely share your crypto keys located in `.places/keys`.  
   - Recommended methods include shared password managers like [Bitwarden](https://bitwarden.com/), secure one-time sharing services, or dedicated tools such as [Amazon KMS](https://aws.amazon.com/kms/).
-  - Collaborators without the necessary decryption keys can still add and edit new secrets but are restricted from reading existing ones.
 
 ## Documentation
 
 ### `places.yaml`
+
+> **Note:**  
+> _places_ uses a custom line-by-line parser and serializer to ensure true roundtrip-preserving YAML,including whitespace and comments. However, this means it doesn't strictly adhere to the [YAML specifications](https://yaml.org/), so you may encounter some odd, unexpected, or unsupported behavior.  
+> On the plus side, you can use (inline) comments and whitespace to annotate and structure [`places.yaml`](#placesyaml).
 
 #### Examples
 
@@ -130,13 +144,13 @@ variables:
       value: 8002
       unencrypted: true
   
-  ADDRESS: ${HOST}:${PORT}
+  ADDRESS: '{{ HOST }}:{{ PORT }}'
 
   DOMAIN:
-    dev: ${PROJECT_NAME}.foo.dev
-    prod: ${PROJECT_NAME}.foo.com
+    dev: '{{ PROJECT_NAME }}.foo.dev'
+    prod: '{{ PROJECT_NAME }}.foo.com'
   
-  JSON_MULTILINE: |
+  JSON_MULTILINE: |-
     {
       "key1": "value1",
       "key2": "value2"
@@ -243,7 +257,7 @@ keys:
 
 ##### `environments`
 
-`environments` define what environment file(s) should be generated.
+`environments` define what `.env` file(s) should be generated.
 
 **Example:**
 ```yaml
@@ -267,10 +281,10 @@ environments:
 
 | Option | Type | Default | Required | Description |
 |--------|------|---------|:--------:|-------------|
-| `filepath` | `String` | `None` | ✅ | filepath of environment file to generate relative to root |
+| `filepath` | `String` | `None` | ✅ | filepath of `.env` file to generate relative to root |
 | `key` | `Bool` | `default` | ❌ | Key to encrypt / decrypt variables of this environment. Refers to keys defined in [keys](#key--keys) |
 | `alias` | `[String]` | `None` | ❌ |Alias(es) that can be used for this environment|
-| `watch` | `Bool` | `false` | ❌ | If `true` and [`places watch start`](#watch-start) is running, this environment will be auto-(re)generated on filechange of [`places.yaml`](#placesyaml) |
+| `watch` | `Bool` | `false` | ❌ | If `true` and [`places watch start`](#watch-start) is running, this `.env` will be auto-(re)generated on filechange of [`places.yaml`](#placesyaml) |
 
 <details>
 <summary>CLI commands:</summary>
@@ -281,7 +295,7 @@ environments:
 
 ##### `variables`
 
-Key-value pairs to save to environment file(s). Keys should contain only uppercase alphanumerics and underscores; otherwise, a warning is printed.
+Key-value pairs to save to `.env` file(s). Keys should contain only uppercase alphanumerics and underscores; otherwise, a warning is printed.
 
 **Example:**
 
@@ -299,13 +313,13 @@ variables:
       value: 8002
       unencrypted: true
   
-  ADDRESS: ${HOST}:${PORT}
+  ADDRESS: '{{ HOST }}:{{ PORT }}'
 
   DOMAIN:
-    dev: ${PROJECT_NAME}.foo.dev
-    prod: ${PROJECT_NAME}.foo.com
+    dev: '{{ PROJECT_NAME }}.foo.dev'
+    prod: '{{ PROJECT_NAME }}.foo.com'
   
-  JSON: |
+  JSON: |-
     {
       'key1': 'value1',
       'key2': 'value2'
@@ -341,20 +355,16 @@ variables:
             key: topsecret # must be defined in keys section
     ```
 
-- Multiline strings (must start with `|`):
+- Multiline strings (must start with `|-`):
     ```yaml
-    JSON: |
+    JSON: |- # comments are not allowed in this line (bug)
         {
         'key1': 'value1',
         'key2': 'value2'
         }
     ```
-- Single-line dicts must be explicitly wrapped into quotes:
-    ```yaml
-    JSON: "{'key1': 'value1', 'key2': 'value2'}"
-    ```
 
-- Value interpolation:
+- Soft string interpolation / templating:
 
     ```yaml
     HOST: localhost
@@ -364,7 +374,7 @@ variables:
         dev: 8001
         prod: 8002
     
-    ADDRESS: ${HOST}:${PORT} # .env = localhost:8000, .env.dev = localhost:8001, etc.
+    ADDRESS: '{{ HOST }}:{{ PORT }}' # .env = localhost:8000, .env.dev = localhost:8001, etc.
     ```
 
 - Lists/arrays with square brackets (**Note:** yaml-multiline arrays are currently NOT supported, see [Known Issues](#known-issues--limitations)!)
@@ -419,7 +429,7 @@ settings:
 | `cryptography`:`dklen` | `Int` | `32` | ❌ | Derived key length |
 | `cryptography`:`salt`:`mode` | `String` | `deterministic` | ❌ | Available modes: `deterministic`[^1], `custom`[^2], `from-file`[^3], `git-project`[^4], `git-branch`[^5], `git-project-branch`[^6] |
 
-[^1]: By default, _places-env_ intentionally uses a deterministic salt. While this allows for some statistical attacks, it enables tracking of value changes.
+[^1]: By default, _places_ intentionally uses a deterministic salt. While this allows for some statistical attacks, it enables tracking of value changes.  
 [^2]: Set a custom salt using `cryptography`:`salt`:`value`.  
 [^3]: Use the content of `cryptography`:`salt`:`filepath` as the salt (e.g., salting with `version.txt`).
 [^4]: Use the Git project name as the salt.  
@@ -499,9 +509,7 @@ variables:
 ## CI/CD
 
 Coming soon!™️
-For now, you can integrate _places-env_ into your Python project or include it during CI build time:
-* Make sure to copy the required [keys](#key--keys) into `./places/keys` and
-* Run [`places generate environment`](#generate-environment) command for the required environment.
+For now, you can integrate _places_ into your Python project or include it during CI build time. Simply run the required [`places generate environment`](#generate-environment) command manually to generate the `.env` file needed.
 
 ## FAQ
 
@@ -515,50 +523,51 @@ For now, you can integrate _places-env_ into your Python project or include it d
 - **Is this for me/my project?**  
     > Again, consider this a toy. For now, use it only for private repositories and only with people you trust.
 
-- **Is _places-env_ secure?**  
-    > Debateable, but broadly speaking 'yes' – especially when in private repositories and with people you trust. In general, _places-env_ exposes encrypted data to others (collaborators or the public), meaning that with enough time, effort and ressources, encrypted values could be cracked. However, _places-env_ was designed to make this unlikely within reasonable boundaries. For instance:  
-    > - [`places sync gitignore`](#sync-gitignore) is executed automatically by default, which should help prevent unencrypted data from being committed.  
+- **Is _places_ secure?**  
+    > Debatable. In general, _places_ exposes encrypted data to others, meaning that with enough time and effort, it could be cracked. However, I’ve tried to design _places_ to make this unlikely within reasonable boundaries. For instance:  
+    > - [`places sync gitignore`](#sync-gitignore) is executed automatically, which should help prevent unencrypted data from being committed.  
     > - [`places generate key`](#generate-key) generates cryptographic keys with appropriate length and entropy.  
     > - `AES-512-GCM` with 210,000 iterations is used as per [OWASP recommendations](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html) (see [settings options](#settings) for more details).  
     >  
-    > That said, some design decisions has been made that may weaken security:  
+    > That said, I’ve made some design decisions that may weaken security:  
     > - By default, a deterministic salt is used to allow for deterministic tracking of changes, which introduces some attack vectors. If security is critical, you can choose alternative salting strategies in [settings options](#settings).  
     > - The cryptographic key exchange between collaborators is manual, so it’s your responsibility to ensure it happens securely.  
-    > - When using the shorthand to define a variable for multiple environment files, any encryption key can decrypt the encrypted value.  
-    > - **If you identify any inherent security flaws in _places-env_, please let me know ASAP. Thank you!**
+    > - When using the shorthand to define a variable for multiple `.env` files, any encryption key can decrypt the encrypted value.  
+    > - **If you identify any inherent security flaws in _places_, please let me know ASAP. Thank you!**
 
-- **Instead of _places-env_ why not just use …**
+- **Instead of _places_ why not just use …**
     - … [sops](https://github.com/getsops/sops)?
-        > To be honest, I was overwhelmed at first glance and didn’t even try it. It’s almost certainly better and more secure in every regard than _places-env_, but at the same time, it looks cumbersome to set up.  
+        > To be honest, I was overwhelmed at first glance and didn’t even try it. It’s almost certainly better and more secure in every regard than _places_, but at the same time, it looks cumbersome to set up.  
         > Additionally, I didn’t like how it seems to require (or strongly encourage) the use of another (potentially overkill) service for key management. Also, it appears to focus on file-based encryption rather than allowing for easy value-based encryption.
     - … [dotenv-vault](https://github.com/dotenv-org/dotenv-vault)?
-        > Similar to [sops](https://github.com/getsops/sops), it looks great and might be a better solution for your use case. It’s also the closest alternative to _places-env_, so you may want to check it out.
-        > What I prefer about _places-env_ is that it doesn't lock you into the [dotenv.org](https://www.dotenv.org/)-ecosystem and that multiple environment files are derived from a single source of truth ([`places.yaml`](#placesyaml)). Additionally, [`places watch start`](#watch-start) persistently tracks changes in [`places.yaml`](#placesyaml) and automatically manages [encryption](#encrypt), [decryption](#decrypt), and [`auto-updates`](#generate-environment) for your environment files.
+        > Similar to [sops](https://github.com/getsops/sops), it looks great and might be a better solution for your use case. It’s also the closest alternative to _places_, so you may want to check it out.
+        > What I prefer about _places_ is that it doesn't you you into the [dotenv.org](https://www.dotenv.org/)-ecosystem, that is that multiple `.env` files are derived from a single source of truth ([`places.yaml`](#placesyaml)). Additionally, [`places watch start`](#watch-start) persistently tracks changes in [`places.yaml`](#placesyaml) and automatically manages [encryption](#encrypt), [decryption](#decrypt), and [`auto-updates`](#generate-environment) for your `.env` files.
     - … [Infisical](https://infisical.com/)?
       > I genuinely wanted to like it, but their documentation is currently a mess. It took me over half an hour to locate their current Python library, which wasn’t even referenced in the documentation. I ultimately gave up, frustrated, when attempting to align secrets with my version tags.
     - … [HashiCorp Vault](https://www.hashicorp.com/products/vault)?
         > Yeah, [no](https://www.hashicorp.com/products/vault/pricing).
     - … git hooks?
-        > Glad you asked! This project actually started as Git hooks, and you can find a very basic MVP in [places-mini](places-mini). It uses a single key to encrypt local environment files but lacks many of the convenient features of _places-env_. For example, you’ll need to manually ensure that all the appropriate entries are added to `.gitignore`, among other things. Also, it uses a naughty hack to track changes and force encryption. Don't use it.
+        > Glad you asked! This project actually started as Git hooks, and you can find a very basic MVP in [places-mini](places-mini). It uses a single key to encrypt local `.env` files but lacks many of the convenient features of _places_. For example, you’ll need to manually ensure that all the appropriate entries are added to `.gitignore`, among other things. Also, it uses a naughty hack to track changes and force encryption. Don't use it.
 
 - **Why is the code so bad?**
-    > As I mentioned above, I’m neither a professional coder nor experienced with the Python ecosystem. Additionally, I’ve made some questionable decisions along the way.
+    > As I mentioned earlier, I’m neither a professional coder nor experienced with the Python ecosystem. Additionally, I’ve made some questionable decisions along the way.
+  
+- **Why didn't you just use [ruamel.yaml](https://sourceforge.net/projects/ruamel-yaml/)?**
+    > I probably should have, as it would have saved me a lot of trouble. However, I couldn’t get it to work the way I wanted. Even when configured for `round_trip`, _ruamel.yaml_ would mess with comments, whitespace, etc. I want [`places.yaml`](#placesyaml) to remain virtually unchanged after a [`places encrypt`](#encrypt) ♻️ [`places decrypt`](#decrypt) roundtrip. That said, it is possible I just did not configure it correctly.
 
-- **Why can’t the generated environment files be styled, structured, or annotated?**
+- **Why can’t the generated `.env` files be styled, structured, or annotated?**
   > It's on the [roadmap](#roadmap) below.
 
-## Roadmap (unordered)
+## Roadmap
 
-* **DEV/CI/CD:** Add infos regarding development and add appropriate CI/CD
-* **Hombrew:** Distribute _places-env_ also via [Homebrew](https://brew.sh/)
-* **CI/CD:** Provide a convient Github Action and Gitlab [CI/CD](#cicd) integration for _places-env_.
-* **Comments in environment files**: Add `comment`property to variables
-* **Layouting in environment files**: Add "meta-variables" (eg. `places.section`) that add sections and linebreaks at gen-time.
+* **CI/CD:** Provide a convient Github Action and Gitlab [CI/CD](#cicd) integration for _places_.
+* **Comments in `.env` files**: Add `comment`property to variables
+* **Layouting in `.env` files**: Add "meta-variables" (eg. `places.section`) that add sections and linebreaks at gen-time.
 
 ## Known issues / Limitations
-* _places-env_ does not adhere to the [YAML specifications](https://yaml.org/).
-* Only array/lists in square brackets are supported, block style arrays aren't supported (yet).
-* Single-line KV/JSON needs to be wrapped in quotes.
+* _places_ does not adhere to the [YAML specifications](https://yaml.org/)
+* Only array/lists in square brackets are supported.
+* Comments get eaten when placed after `|-`
 
 ***
 
@@ -583,10 +592,10 @@ places add environment NAME [OPTIONS]
 
 | Short | Long Option | Description |
 |-------|-------------|-------------|
-| `-f` | `--filepath <String>` | Path to environment file. |
-| `-w` | `--watch <Bool>` | Enable file watching. |
-| `-a` | `--alias <String>` | Environment aliases. |
-| `-k` | `--key <String>` | Key to use for encryption. |
+| `-f` | `--filepath <filepath>` | Path to environment file. |
+| `-w` | `--watch <watch>` | Enable file watching. |
+| `-a` | `--alias <alias>` | Environment aliases. |
+| `-k` | `--key <key>` | Key to use for encryption. |
 
 
 **Arguments**
@@ -684,12 +693,12 @@ places add setting [OPTIONS]
 
 | Short | Long Option | Description |
 |-------|-------------|-------------|
-| `-sg` | `--sync-gitignore <Bool>` | Enable/disable .gitignore sync. |
-| `-i` | `--iterations <Int>` | Number of iterations for cryptography. |
-| `-hf` | `--hash-function <String>` | Hash function for cryptography. |
-| `-sm` | `--salt-mode <String>` | Salt mode for cryptography. |
-| `-sf` | `--salt-filepath <String>` | Salt filepath for cryptography. |
-| `-sv` | `--salt-value <String>` | Salt value for cryptography. |
+| `-sg` | `--sync-gitignore <sync_gitignore>` | Enable/disable .gitignore sync. |
+| `-i` | `--iterations <iterations>` | Number of iterations for cryptography. |
+| `-hf` | `--hash-function <hash_function>` | Hash function for cryptography. |
+| `-sm` | `--salt-mode <salt_mode>` | Salt mode for cryptography. |
+| `-sf` | `--salt-filepath <salt_filepath>` | Salt filepath for cryptography. |
+| `-sv` | `--salt-value <salt_value>` | Salt value for cryptography. |
 
 ***
 
@@ -714,10 +723,10 @@ places add variable NAME [OPTIONS]
 
 | Short | Long Option | Description |
 |-------|-------------|-------------|
-| `-v` | `--value <Any>` | Value of variable / secret. |
-| `-k` | `--key <String>` | Key to use for encryption. |
-| `-u` | `--unencrypt <Bool>` | Mark value as unencrypted. |
-| `-e` | `--environment <String>` | Target environment(s). |
+| `-v` | `--value <value>` | Value of variable / secret. |
+| `-k` | `--key <key>` | Key to use for encryption. |
+| `-u` | `--unencrypt <unencrypt>` | Mark value as unencrypted. |
+| `-e` | `--environment <environment>` | Target environment(s). |
 
 
 **Arguments**
@@ -732,7 +741,7 @@ places add variable NAME [OPTIONS]
 
 ## decrypt
 
-Decrypts `.places/places.enc.yaml` into `places.yaml` file.
+Decrypt `.places/places.enc.yaml` into `places.yaml` file.
 
 ```shell
 places decrypt [OPTIONS]
@@ -740,7 +749,7 @@ places decrypt [OPTIONS]
 
 ## encrypt
 
-Encrypts `places.yaml` into `.places/places.enc.yaml` file.
+Encrypt `places.yaml` into `.places/places.enc.yaml` file.
 
 ```shell
 places encrypt [OPTIONS]
@@ -799,7 +808,7 @@ places generate key [NAME] [OPTIONS]
 
 | Short | Long Option | Description |
 |-------|-------------|-------------|
-| `-l` | `--length <Int>` | Custom length for generated key in bytes. |
+| `-l` | `--length <length>` | Custom length for generated key in bytes. |
 | `-a` | `--add` | Add key to places.yaml |
 
 
@@ -834,7 +843,7 @@ places init [OPTIONS]
 
 | Short | Long Option | Description |
 |-------|-------------|-------------|
-| `-t` | `--template <String>` | Template to use for initialization |
+| `-t` | `--template <template>` | Template to use for initialization |
 | `--list-templates` | `--list-templates` | List available templates |
 
 ***

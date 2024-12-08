@@ -1,0 +1,36 @@
+environments:
+  local:
+    filepath: .env
+    watch: true
+  development:
+    filepath: .env.dev
+    watch: true
+    alias: [dev, stage]
+    key: dev
+  production:
+    filepath: .env.prod
+    watch: true
+    alias: [prod]
+    key: prod
+keys:
+  default: .places/keys/default
+  dev: .places/keys/dev
+  prod: .places/keys/prod
+  test: .places/keys/test
+settings:
+  cryptography:
+    iterations: 1
+variables:
+  PROJECT_NAME: encrypted(default|dev|prod):MlwFVe+Ho46SooLuK0UCrOXUItkYEnEP36XfD/ANp7s=|vP5l/b7a6/K4g/afqdV8Vhh84gW6muDsiFAWIbMbIzI=|BBDmb9lAb6WQ+TekGDYbL4Q4e9szuPjpIGSc8oBmMwM=
+  HOST:
+    value: localhost
+    unencrypted: true
+  PORT:
+    local:
+      value: encrypted(default):GV8SWMaFr8RCVcJsW9VIlAA1ZI+NlJVV
+    prod:
+      value: encrypted(default):GV8SWMaVr8QldbDk7FDZ9R35cPZcmhRB
+    dev:
+      value: encrypted(default):GV8SWMajr8R4OTWOD8+8Il9ny+1h6+ca
+  ADDRESS: encrypted(default|dev|prod):HFMnZt/13KyXm9T0FCMOzPK6NrEb2EwrBOOaQJnHhGUQa/oB|kvFHzo6olNC9uqCFlrNwNjzl6G9k90N2QRNhYQdYKyof4vBb|Kh/EXOkyEIeVwGG+J1AXT3AGKxP26oh1sogs3FgnSL0efDT9
+  KV: encrypted(default|dev|prod):M2IZXdGc+ZC+pvGtKEU0rf2FLrFm/Do3tQEIpJzptDy+rVux|vcB59YDBseyUh4XcqtVKVzPa8G9+PK9jXkLn4e2lAMXfcnTd|BS76Z+dbNbu8/UTnGzYtLn85MxNvjD10tes72g9WQGPvOFlC
