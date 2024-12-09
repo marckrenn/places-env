@@ -3,6 +3,7 @@ pyyaml==6.0.*
 watchdog==6.0.*
 cryptography==43.0.*
 psutil==6.1.*
+ruamel.yaml==0.18.*
 
 [dev]
 pytest==8.3.*

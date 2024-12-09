@@ -1,5 +1,6 @@
 import os
 import base64
+import sys
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import (
     PlainScalarString,
@@ -21,7 +22,7 @@ from .places_utils import (
 def encrypt_value(value, key_path, current_var=None, settings=None):
     """
     Encrypt a value using the key from the specified key_path.
-    Returns the encrypted value as a base64-encoded string, or None if encryption fails.
+    Returns the encrypted value as a base64-encoded string, or exits if key file is missing.
     """
     try:
         value = convert_string_value(value)
@@ -41,9 +42,10 @@ def encrypt_value(value, key_path, current_var=None, settings=None):
 
         if not os.path.isfile(key_path):
             print(
-                f"Warning: Key file '{key_path}' does not exist for variable '{current_var}'."
+                f"Error: Key file '{key_path}' does not exist for variable '{current_var}'."
             )
-            return None
+            sys.exit(1)
+
         with open(key_path, "rb") as key_file:
             password = key_file.read()
         key = derive_key(password, settings)
@@ -114,27 +116,40 @@ def encrypt_with_compound_key(
                 )
                 continue
 
+            if not os.path.isfile(key_path):
+                print(
+                    f"Warning: Key file '{key_path}' does not exist for variable '{current_var}'."
+                )
+                continue
+
             if isinstance(value, list):
                 value_str = str(value)[1:-1]
             else:
                 value_str = str(value)
 
-            input_bytes = value_str.encode("utf-8")
-            b64_data = (
-                base64.b64encode(input_bytes).replace(b"\n", b"").replace(b"\r", b"")
-            )
+            try:
+                input_bytes = value_str.encode("utf-8")
+                b64_data = (
+                    base64.b64encode(input_bytes)
+                    .replace(b"\n", b"")
+                    .replace(b"\r", b"")
+                )
 
-            with open(key_path, "rb") as key_file:
-                password = key_file.read()
-            key = derive_key(password, settings)
+                with open(key_path, "rb") as key_file:
+                    password = key_file.read()
+                key = derive_key(password, settings)
 
-            aesgcm = AESGCM(key)
-            encrypted_data = aesgcm.encrypt(b"0" * 12, b64_data, None)
-            encrypted_value = base64.b64encode(encrypted_data).decode("utf-8")
+                aesgcm = AESGCM(key)
+                encrypted_data = aesgcm.encrypt(b"0" * 12, b64_data, None)
+                encrypted_value = base64.b64encode(encrypted_data).decode("utf-8")
 
-            if encrypted_value:
                 encrypted_values.append(encrypted_value)
                 used_key_names.append(key_name)
+            except Exception as e:
+                print(
+                    f"Warning: Encryption failed with key '{key_name}' for variable '{current_var}': {e}"
+                )
+                continue
 
         if not encrypted_values:
             return None
