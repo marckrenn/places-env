@@ -1,19 +1,18 @@
-name: Lint and Test
+
+name: Lint
 
 on:
+  push:
   workflow_call:
-    inputs:
-      python-version:
-        required: false
-        type: string
-        default: ""
+
+permissions:
+  contents: write
 
 jobs:
-  lint-and-test:
+  lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Get Python version from pyproject.toml
         run: |
@@ -25,8 +24,6 @@ jobs:
         with:
           path: ~/.uv
           key: uv-dependencies-${{ runner.os }}-${{ hashFiles('pyproject.toml') }}
-          restore-keys: |
-            uv-dependencies-${{ runner.os }}-
 
       - name: Install uv
         uses: astral-sh/setup-uv@v4
@@ -40,12 +37,15 @@ jobs:
       - name: Run Black
         run: |
           uv run black .
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git diff --exit-code || (git add . && git commit -m "style: auto-format with Black" && git push)
+          if git diff --exit-code; then
+            echo "No formatting changes needed"
+          else
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git config --global user.name "github-actions[bot]"
+            git add .
+            git commit -m "style: auto-format with Black"
+            git push "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:${{ github.ref }}
+          fi
 
       - name: Run Pyflakes
         run: uv run pyflakes . || true
-
-      - name: Run Tests
-        run: uv run pytest --verbose

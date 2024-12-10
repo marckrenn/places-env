@@ -6,12 +6,16 @@ on:
       - main
 
 jobs:
-  lint-and-test:
-    uses: ./.github/workflows/lint_and_test.yaml
+  lint:
+    uses: ./.github/workflows/lint.yaml
+
+  test:
+    needs: lint
+    uses: ./.github/workflows/test.yaml
 
   publish:
+    needs: test
     runs-on: ubuntu-latest
-    needs: lint-and-test
     steps:
       - name: Check out code
         uses: actions/checkout@v4
