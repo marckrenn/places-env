@@ -186,7 +186,7 @@ JSON_MULTILINE='{
 <details>
 <summary>CLI commands:</summary>
 
-- Encrypts the values in [`places.yaml`](#placesyaml) and saves the encrypted data to [`.places/places.enc.yaml`](#placesencyaml).
+- Encrypt the values in [`places.yaml`](#placesyaml) and saves the encrypted data to [`.places/places.enc.yaml`](#placesencyaml):
     
     [`places encrypt`](#encrypt)
 
@@ -394,7 +394,7 @@ variables:
 
 ##### `settings`
 
-Allows you to configure project parameters, primarily related to cryptography.
+Allows for configuration of project parameters, primarily related to cryptography.
 
 **Examples:**
 ```yaml
@@ -515,8 +515,19 @@ For now, you can integrate _places-env_ into your Python project or include it d
 - **Is this for me/my project?**  
     > Again, consider this a toy. For now, use it only for private repositories and only with people you trust.
 
+- **What happens if a collaborator doesn't have all the crypto keys defined in [`places.yaml`](#placesyaml)?**
+
+  - **For per-environment values (e.g., `PORT: local: 8000`)**:  
+    If a collaborator lacks the required keys, [`places decrypt`](#decrypt) will fail to decrypt the encrypted value. In this case, the unencrypted value will remain in [`places.yaml`](#placesyaml) as-is. When re-encrypting with [`places encrypt`](#encrypt), the existing encrypted value will be written to [`places.enc.yaml`](#placesencyaml) unchanged.
+
+  - **For shorthand/compound values (e.g., `PROJECT_NAME: your-project-name`) that use multi/compound keys**:  
+    If the user possesses any of the required keys (e.g. `default` and `dev` out of `encrypted(default|dev|prod):kvvmBt…`), [`places decrypt`](#decrypt) will successfully decrypt the value. When encrypting with [`places encrypt`](#encrypt), all keys (e.g. `default` and `dev`) available to the user will be used to encrypt the value.
+
+  - **Important Consideration**:  
+    Compound values should only be used for non-sensitive information. For sensitive values, define them explicitly per environment.
+
 - **Is _places-env_ secure?**  
-    > Debateable, but broadly speaking 'yes' – especially when in private repositories and with people you trust. In general, _places-env_ exposes encrypted data to others (collaborators or the public), meaning that with enough time, effort and ressources, encrypted values could be cracked. However, _places-env_ was designed to make this unlikely within reasonable boundaries. For instance:  
+    > Debateable, but broadly speaking it should be, yes – especially when used in private repositories and with people you trust. In general, _places-env_ exposes encrypted data to others (collaborators or the public), meaning that with enough time, effort and ressources, encrypted values could be cracked. However, _places-env_ was designed to make this unlikely within reasonable boundaries. For instance:  
     > - [`places sync gitignore`](#sync-gitignore) is executed automatically by default, which should help prevent unencrypted data from being committed.  
     > - [`places generate key`](#generate-key) generates cryptographic keys with appropriate length and entropy.  
     > - `AES-512-GCM` with 210,000 iterations is used as per [OWASP recommendations](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html) (see [settings options](#settings) for more details).  
