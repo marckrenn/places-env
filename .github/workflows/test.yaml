@@ -34,7 +34,7 @@ jobs:
         run: uv sync --all-extras --dev
     
       - name: Install places
-        run: uv run pip install -e .
+        run: uv run pip install .
 
       - name: Run Tests
         run: places run test -a
