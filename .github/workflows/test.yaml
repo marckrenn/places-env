@@ -1,4 +1,3 @@
-
 name: Test
 
 on:
@@ -9,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Get Python version from pyproject.toml
         run: |
@@ -31,6 +32,9 @@ jobs:
 
       - name: Sync dependencies
         run: uv sync --all-extras --dev
+    
+      - name: Install places
+        run: uv run pip install -e .
 
       - name: Run Tests
-        run: uv run pytest --verbose
+        run: places run test -a
