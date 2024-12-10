@@ -1,12 +1,10 @@
-
 name: Lint
 
 on:
   push:
+    branches-ignore:
+      - main
   workflow_call:
-
-permissions:
-  contents: write
 
 jobs:
   lint:
