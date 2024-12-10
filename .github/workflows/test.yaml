@@ -34,10 +34,10 @@ jobs:
         run: uv sync --all-extras --dev
     
       - name: Build package
-        run: uv run python -m build
+        run: uv build
 
       - name: Install places
-        run: uv run pip install dist/*.whl
+        run: uv pip install dist/*.whl
 
       - name: Run Tests
         run: places run test -a
