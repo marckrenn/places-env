@@ -40,4 +40,4 @@ jobs:
         run: uv pip install dist/*.whl
 
       - name: Run Tests
-        run: places run test -a
+        run: uv run places run test -a
