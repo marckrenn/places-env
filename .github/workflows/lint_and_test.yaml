@@ -4,8 +4,9 @@ on:
   workflow_call:
     inputs:
       python-version:
-        required: true
+        required: false
         type: string
+        default: ""
 
 jobs:
   lint-and-test:
@@ -13,6 +14,11 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+
+      - name: Get Python version from pyproject.toml
+        run: |
+          PYTHON_VERSION=$(grep "python =" pyproject.toml | sed -E 's/.*"python = "\^?([0-9]+\.[0-9]+).*/\1/')
+          echo "PYTHON_VERSION=$PYTHON_VERSION" >> $GITHUB_ENV
 
       - name: Cache uv dependencies
         uses: actions/cache@v3
@@ -26,7 +32,7 @@ jobs:
         uses: astral-sh/setup-uv@v4
 
       - name: Set up Python
-        run: uv python install
+        run: uv python install ${{ env.PYTHON_VERSION }}
 
       - name: Sync dependencies
         run: uv sync --all-extras --dev
