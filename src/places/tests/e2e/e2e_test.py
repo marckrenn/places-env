@@ -14,17 +14,17 @@ def test_e2e(test_dirs):
 
     try:
         # Run each command and capture output
-        run_command("places init")  # Initialize with empty configuration first
-        run_command("places add key_from_string default default -f")
-        run_command("places add key_from_string prod prod -f")
-        run_command("places add key_from_string dev dev -f")
-        run_command("places add key_from_string test test -f")
+        run_command("uv run places init")  # Initialize with empty configuration first
+        run_command("uv run places add key_from_string default default -f")
+        run_command("uv run places add key_from_string prod prod -f")
+        run_command("uv run places add key_from_string dev dev -f")
+        run_command("uv run places add key_from_string test test -f")
         run_command(
-            "places init --template _e2e_test"
+            "uv run places init --template _e2e_test"
         )  # Re-initialize with e2e_test template (a bit hacky, I know)
-        run_command("places encrypt")
-        run_command("places decrypt")
-        run_command("places generate environment --all")
+        run_command("uv run places encrypt")
+        run_command("uv run places decrypt")
+        run_command("uv run places generate environment --all")
     except Exception as e:
         print("\nTest failed during command execution:")
         print(str(e))
