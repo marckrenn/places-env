@@ -17,7 +17,7 @@ jobs:
 
       - name: Get Python version from pyproject.toml
         run: |
-          PYTHON_VERSION=$(grep "python =" pyproject.toml | sed -E 's/.*"python = "\^?([0-9]+\.[0-9]+).*/\1/')
+          PYTHON_VERSION=$(grep "requires-python" pyproject.toml | sed -E 's/.*>=([0-9]+\.[0-9]+).*/\1/')
           echo "PYTHON_VERSION=$PYTHON_VERSION" >> $GITHUB_ENV
 
       - name: Cache uv dependencies
