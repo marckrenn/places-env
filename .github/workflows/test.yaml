@@ -6,6 +6,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      checks: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,5 +42,9 @@ jobs:
       - name: Install places
         run: uv pip install dist/*.whl
 
+      - name: Set directory permissions
+        run: |
+          chmod -R 777 .
+          
       - name: Run Tests
         run: uv run places run test -a
