@@ -1,0 +1,10 @@
+
+key: .places/keys/default
+
+environments:
+  local:
+    filepath: .env
+    watch: true
+
+variables:
+  PROJECT_NAME: your-project-name

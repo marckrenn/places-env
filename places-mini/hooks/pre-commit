@@ -1,0 +1,228 @@
+#!/usr/bin/env bash
+
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+# Define the path to the encryption key file
+KEY_FILE=".env-enc/key"
+
+# Define plaintext and encrypted files using parallel arrays
+PLAINTEXT_FILES=(
+  ".env"
+  ".env.dev"
+  ".env.prod"
+)
+
+ENCRYPTED_FILES=(
+  ".env-enc/.env.enc"
+  ".env-enc/.env.dev.enc"
+  ".env-enc/.env.prod.enc"
+)
+
+# Ensure the .env-enc directory exists
+if [ ! -d ".env-enc" ]; then
+  mkdir -p ".env-enc"
+  echo "Created directory '.env-enc' for encrypted files."
+fi
+
+echo "Review encrypted env-files"
+echo "Starting pre-commit encryption process..."
+
+# Debug: List the files to encrypt
+echo "Plaintext files:"
+for file in "${PLAINTEXT_FILES[@]}"; do
+  echo "  - $file"
+done
+
+echo "Encrypted files:"
+for file in "${ENCRYPTED_FILES[@]}"; do
+  echo "  - $file"
+done
+
+# Check if the encryption key file exists
+if [ ! -f "$KEY_FILE" ]; then
+  echo "Error: Encryption key file '$KEY_FILE' does not exist."
+  echo "Please create the file with your 32-character encryption key."
+  exit 1
+fi
+
+# Read the encryption key from the key file and trim whitespace
+ENCRYPTION_KEY=$(tr -d '[:space:]' < "$KEY_FILE")
+
+if [ -z "$ENCRYPTION_KEY" ]; then
+  echo "Error: Encryption key is empty."
+  exit 1
+fi
+
+# Verify that the encryption key is exactly 32 characters (256 bits) for AES-256
+KEY_LENGTH=${#ENCRYPTION_KEY}
+if [ "$KEY_LENGTH" -ne 32 ]; then
+  echo "Error: Encryption key must be exactly 32 characters long for AES-256-ECB."
+  exit 1
+fi
+
+# Function to temporarily remove entries from .gitignore
+remove_gitignore_entries() {
+  for file in "${PLAINTEXT_FILES[@]}"; do
+    if grep -Fxq "$file" .gitignore; then
+      grep -Fxv "$file" .gitignore > .gitignore.tmp
+      mv .gitignore.tmp .gitignore
+      echo "Temporarily removed '$file' from .gitignore."
+    fi
+  done
+}
+
+# Function to re-add entries to .gitignore
+restore_gitignore_entries() {
+  for file in "${PLAINTEXT_FILES[@]}"; do
+    if ! grep -Fxq "$file" .gitignore; then
+      echo "$file" >> .gitignore
+      echo "Re-added '$file' to .gitignore."
+    fi
+  done
+}
+
+# Remove .env files from .gitignore to allow Git to track changes
+remove_gitignore_entries
+
+# Get list of changed files (staged and unstaged)
+CHANGED_FILES=$(git status --porcelain | awk '{print $2}')
+
+# Determine which plaintext files have changed
+FILES_TO_ENCRYPT=()
+for file in "${PLAINTEXT_FILES[@]}"; do
+  if echo "$CHANGED_FILES" | grep -Fxq "$file"; then
+    FILES_TO_ENCRYPT+=("$file")
+  fi
+done
+
+# If no relevant files have changed, exit early
+if [ ${#FILES_TO_ENCRYPT[@]} -eq 0 ]; then
+  echo "No changes detected in plaintext files. Skipping encryption."
+  # Restore .gitignore before exiting
+  restore_gitignore_entries
+  exit 0
+fi
+
+echo "Files to encrypt:"
+for file in "${FILES_TO_ENCRYPT[@]}"; do
+  echo "  - $file"
+done
+
+# Initialize a flag to track if encryption was performed
+ENCRYPTION_PERFORMED=0
+
+# Iterate over the files to encrypt
+for PLAINTEXT_FILE in "${FILES_TO_ENCRYPT[@]}"; do
+  # Determine the corresponding encrypted file
+  for index in "${!PLAINTEXT_FILES[@]}"; do
+    if [ "${PLAINTEXT_FILES[$index]}" == "$PLAINTEXT_FILE" ]; then
+      ENCRYPTED_FILE="${ENCRYPTED_FILES[$index]}"
+      break
+    fi
+  done
+
+  echo "Processing $PLAINTEXT_FILE..."
+
+  if [ -f "$PLAINTEXT_FILE" ]; then
+    echo "Encrypting values in $PLAINTEXT_FILE to $ENCRYPTED_FILE..."
+
+    # Create a temporary file for the new encrypted content
+    TEMP_ENCRYPTED_FILE=$(mktemp)
+
+    # Read the plaintext file line by line and write to the temporary encrypted file
+    while IFS= read -r line || [ -n "$line" ]; do
+      # Skip empty lines and comments
+      if [[ -z "$line" || "$line" =~ ^# ]]; then
+        echo "$line" >> "$TEMP_ENCRYPTED_FILE"
+        continue
+      fi
+
+      # Check if the line contains an equals sign
+      if [[ "$line" == *"="* ]]; then
+        # Split the line into key and value
+        IFS='=' read -r key value <<< "$line"
+
+        # Trim whitespace
+        key=$(echo "$key" | xargs)
+        value=$(echo "$value" | xargs)
+
+        # Check if the value is already encrypted
+        if [[ "$value" =~ ^ENC\(.+\)$ ]]; then
+          echo "  - Skipping already encrypted key: $key"
+          echo "$line" >> "$TEMP_ENCRYPTED_FILE"
+          continue
+        fi
+
+        # Encrypt the value using AES-256-ECB without salt
+        encrypted_value=$(echo -n "$value" | openssl enc -aes-256-ecb -nosalt -pbkdf2 -iter 100000 \
+          -pass pass:"$ENCRYPTION_KEY" | base64)
+
+        # Check if encryption was successful
+        if [ $? -ne 0 ]; then
+          echo "Error: Encryption failed for key '$key'."
+          # Remove temporary file before exiting
+          rm -f "$TEMP_ENCRYPTED_FILE"
+          # Restore .gitignore before exiting
+          restore_gitignore_entries
+          exit 1
+        fi
+
+        # Format the encrypted value
+        formatted_encrypted_value="ENC(${encrypted_value})"
+
+        # Write the key and encrypted value to the temporary encrypted file
+        echo "$key=$formatted_encrypted_value" >> "$TEMP_ENCRYPTED_FILE"
+
+        echo "  - Encrypted key: $key"
+      else
+        # If the line doesn't contain an equals sign, write it as-is
+        echo "$line" >> "$TEMP_ENCRYPTED_FILE"
+      fi
+    done < "$PLAINTEXT_FILE"
+
+    # Check if the encrypted file already exists
+    if [ -f "$ENCRYPTED_FILE" ]; then
+      # Compare the temporary encrypted file with the existing one
+      if ! cmp -s "$TEMP_ENCRYPTED_FILE" "$ENCRYPTED_FILE"; then
+        # If different, replace the encrypted file and set the flag
+        mv "$TEMP_ENCRYPTED_FILE" "$ENCRYPTED_FILE"
+        ENCRYPTION_PERFORMED=1
+        echo "  - Encrypted file '$ENCRYPTED_FILE' updated."
+      else
+        # If identical, remove the temporary file
+        rm -f "$TEMP_ENCRYPTED_FILE"
+        echo "  - Encrypted file '$ENCRYPTED_FILE' is up-to-date."
+      fi
+    else
+      # If encrypted file doesn't exist, move the temporary file to encrypted file
+      mv "$TEMP_ENCRYPTED_FILE" "$ENCRYPTED_FILE"
+      ENCRYPTION_PERFORMED=1
+      echo "  - Encrypted file '$ENCRYPTED_FILE' created."
+    fi
+
+    # Add the encrypted file to the staging area if it was updated
+    if [ "$ENCRYPTION_PERFORMED" -eq 1 ]; then
+      git add "$ENCRYPTED_FILE"
+      echo "  - Staged encrypted file '$ENCRYPTED_FILE'."
+    fi
+
+    # Remove the plaintext file from the staging area to prevent accidental commit
+    git rm --cached "$PLAINTEXT_FILE" 2>/dev/null || true
+  else
+    echo "Warning: Plaintext file '$PLAINTEXT_FILE' does not exist. Skipping encryption for this file."
+  fi
+done
+
+# Restore .gitignore entries
+restore_gitignore_entries
+
+# Check if any encryption was performed
+if [ "$ENCRYPTION_PERFORMED" -eq 1 ]; then
+  # Optionally, you can uncomment the following line to abort the commit after encryption
+  # echo "Aborting commit to add encrypted files. Please review the changes and commit again."
+  exit 1
+fi
+
+echo "Pre-commit encryption completed successfully."
+exit 0

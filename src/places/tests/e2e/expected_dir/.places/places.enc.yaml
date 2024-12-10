@@ -1,0 +1,137 @@
+settings:
+  cryptography:
+    iterations: 1
+
+keys:
+  default: .places/keys/default
+  dev: .places/keys/dev
+  prod: .places/keys/prod
+  test: .places/keys/test
+
+environments:
+  local:
+    filepath: .env
+    watch: true
+  development:
+    filepath: .env.dev
+    alias: [dev]
+    key: dev
+    watch: true
+  production:
+    filepath: .env.prod
+    alias: [prod]
+    key: prod
+    watch: true
+
+variables:
+
+  # -----------
+  # Setting values for all environments using shorthand
+  # -----------
+
+  STRING_SHORTHAND: encrypted(default|dev|prod):AygBVuqTp5e4iOHpEnsO9MWRE+/Ho764AolDt0fhwCYKcxxwJpvLYbRfC8mU08c/POEQ8e/iqhvL7d8fPhyCJIMAG8qfSxtgHrOjYasC65h/R4rKb9bp03bxvqYo6Kbe|jYph/rvO7+uSqZWYkOtwDgvOzTFOZOXjexWdvAuIb9CJmMZ0VA0QHbkyeRC+uXsSEHmrjo5/UxuW1VVbKOFcdmrGsHmVT7aAxfboTpZsZw2Yc5ku2n1WTlYLHwjZxkrH|NWTibNxUa7y601SjIQgXd0ctDk27Fa+K82im2BobvR6oAJx091pazl5evtHQM9dMBZZiB3UUsVYLOpyS2rxV6iTMSHB1/5tPNYXV/yKsUpH/OOIXyboZ4g1aMqSm9j4L # comment
+
+  INT_SHORTHAND: encrypted(default|dev|prod):G08eVcWzr8Syn10uidjBdDvPcZjtG0qS|le1+/ZTu57gmWVvJMp5iuoy87y7yJH1J|LQP9b/N0Y+9TnGGVa7v/0GNG3Yv2Fljb # comment
+
+  FLOAT_SHORTHAND: encrypted(default|dev|prod):G08eWsa+8cS1DfBFprO1guuvnGc2OFYC|le1+8pfjubiqtQsNu4CWGOY4zeRxgdsT|LQP9YPB5Pe/gfez/1JJdRSh838WfM9F9 # comment
+
+  KV_SHORTHAND: encrypted(default|dev|prod):M2IZXdGc+ZC+pvr2FX8K78OBMeH7pba3DbHGQOH8Q4eutWItELbs2w==|vcB59YDBseyUh46Hl+90FQ3e7z9yYu3sPm0Q9XWDRrsmIWd9XS8J9Q==|BS76Z+dbNbu8/U+8JgwTbEE9LEOHE6eFMSYLOmpHfCxYY/uyyW96UA== # comment
+
+  STRING_LIST_SHORTHAND: encrypted(default|dev|prod):ASgBQ+j3w4G9jPmvK0oCrOq6VLV/cM9M56p2FNF9liJb8v2/|j4ph67mqi/2XrY3eqdp8ViTlimsLwYs0QnvjkjEznRORRyF+|N2Tied4wD6q/10zlGDkbL2gGSReFiC8aA5XerwYee8FMsyna # comment
+
+  INT_LIST_SHORTHAND: encrypted(default|dev|prod):AWEWXMKA24q4i/bsOFYe+D3Mqdg5NfmO5ExU+Q23iDI=|j8N29JPdk/aSqoKdusZgAnw8uRZO8mwMDjjG0JaCdmk=|Ny31ZvRHF6G60EOmCyUHe3ODaLhzwGiyNLxSDP3liT8= # comment
+
+  STRING_SHORTHAND_WITH_EXPLICIT_KEY: # comment
+    value: encrypted(test):8EftbsFzodJXqlxcpbCrLpwpbbG3iWrfRDoJOdAnjgO1tD1EA+xAOXYa5Hnsi1LS
+    key: test # comment
+  UNENCRYPTED_STRING_SHORTHAND: # comment
+    value: This shouldn't be encrypted for all envs
+    unencrypted: true # comment
+
+
+  # -----------
+  # Setting values per environment using keys set in environments
+  # -----------
+
+  STRING_PER_ENV: # comment
+    local: encrypted(default):NFxqRdKT5cR3wbpJlOSAbTsAT/ciJmZZ # comment
+    dev: encrypted(dev):gv5ltXFv43W5tu1AYftNFLxzJlE= # comment
+    prod: encrypted(prod):Ax/6Y+dCY+9MgYrn5p59WLc7bkXv25KN # comment
+
+  INT_PER_ENV: # comment
+    local: encrypted(default):G0puEu0mU3UE0/Q1rSSavqgHcd0= # comment
+    dev: encrypted(dev):ld4OutMUAkVzJfpdVz0j66aJA2Q= # comment
+    prod: encrypted(prod):LSCNKJJf+1ogah3EhZknef/HuTs= # comment
+
+  INT_LIST_PER_ENV: # comment
+    local: encrypted(default):AWEWXMat5YOpnoaiIWAfHUMt/4GOC4M/esdJzw== # comment
+    dev: encrypted(dev):j8N29Jfwrf+Dv/LTv0YyJTtRaOrpAZorYY7tYw== # comment
+    prod: encrypted(prod):Ny31ZvBqKeKrxTPogUe73QtppApUXBX1dNCOvw== # comment
+
+  FLOAT_PER_ENV: # comment
+    local: encrypted(default):G0hnV5KuI0f5P23uec5wXfSc8Xc= # comment
+    dev: encrypted(dev):ldAH/nrbkz7ZGNpLzZizMmIJO7s= # comment
+    prod: encrypted(prod):LS6Eb3779wtI+ONYasYVSWTXBqQ= # comment
+
+  STRINGS_FOR_SOME_ENVS: # comment
+    dev: encrypted(dev):gv5ltXFv43W5tu1AYftNFLxzJlE= # comment
+    prod: encrypted(prod):Ax/6Y+dCY+9MgYrn5p59WLc7bkXv25KN # comment
+
+  STRINGS_PER_ENV_PROD_UNENCRYPTED: # comment
+    local: encrypted(default):AFw7X+i90IOQiIKuE1Ud+/67Me/Ho77gAp5trEHL2DQmYzowGIv9YbIqXpOsx/I0P70fo4cO4EfsII6GpdrDfH+x/AM= # comment
+    dev: encrypted(dev):jv5b97ngmP+6qfbfkcVjATDk7zFOZOW7ewKzpw2id8KliOA0ah0mHYdHQxKWvU0SF0bP1CXzEetaYbycDLl01g5vNqs= # comment
+    prod: # comment
+      value: This shouldn't be encrypted for prod env # comment
+      unencrypted: true # comment
+
+  INTEGER_PER_VALUE_WITH_EXPLICIT_KEY: # comment
+    local: # comment
+      value: encrypted(test):70HlOaU0HBmdW9fhA3VH5Jd/Srs= # comment
+      key: test # comment
+    prod:
+      value: encrypted(test):73flOUx7889VEvQckrMbINKInjU=
+      key: test
+    dev:
+      value: encrypted(test):72flOeA3MSDk6ukWpMCnG4Tp/kE=
+      key: test
+
+
+  # -----------
+  # String templating
+  # -----------
+
+  STRING_TEMPLATING_SHORTHAND: encrypted(default|dev|prod):HFMne92C2LOlpN/5JCIkzPK6NsHMob7POcFlkXPJ5jk9fTYRKIn2QoM7NZ+moNMJONwI+cSYiHrU7KwsIzC8KrQCNfCeLANdAZrnfTe55wc8NrKadloEAeEts/Q=|kvFH04zfkM+PhauIprJaNjzl6B9FZuWUQF27mj+gSc++luwVWh8tPo5WR0aMym8kFESzhqUFcXqJ1CZoNc1ieF3EnkOUKK692t+sUkBIxJN6lBn1yma2lPFNR6M=|Kh/EQetFFJin/2qzF1E9T3AGK2OwF6/9yCCA/i4zmwGfDrYV+Uhn7Wk6gIfiQMN6Aat6D15ukzcUO++hx5Br5BPOZkp0mINyKqyR40BGKwGC5kdaHEMIrPc+N58= # comment
+
+  STRING_TEMPLATING_PER_ENV: # comment
+    local: encrypted(default):HFMne92C2LOlpN/5JCIkzPK6NsHMob7PB6NAsEC9wAo6QDIPLv2jV4I7LZ+nxbAEON50q18qTFiPFieQDcuc5mSeZBQ= # comment
+    dev: encrypted(dev):kvFH04zfkM+PhauIprJaNjzl6B9FZuWUfj+euwzUb/y5q+gLXGt4K49WX0aNrwwpO1/C1PWtkzMv+ODUR9lsLbeH+sw= # comment
+    prod: encrypted(prod):Kh/EQetFFJin/2qzF1E9T3AGK2OwF6/99kKl3x1HvTKYM7IL/zwy+Gg6mIfjJaB3AakGXdiQ+Q7PS0/bFmEBWr1OC9Y= # comment
+
+  STRING_LIST_TEMPLATING_SHORTHAND: encrypted(default|dev|prod):AWEWXMKHwM6imo7KKSMC1fPnLt3Osc3FM7gxqGzE/TEOGQh1Nrb1YZpePZGX2NM/FLx55ceTrhnXm7Q1JA7tBLl2LeqSLR9HBLGRQpwV7/1fiEE8BhUoTxFxJwmfTxK4lRCYdpbGisMfthvTE3ns9sdwNH8R8EX948gSYzVLzKf4v2CYTfjbr5i6ot/sHDz7oO3CAA==|j8N29JPaiLKIu/q7q7N8Lz248ANHdpaeSiTvoyCtUseN8tJxRCAuHZczT0i9sm8SOCTCmqYOVxmKoz5xMvMzVlCwhlmYKbKn3/TabaF7Y2jWG0zrZLXnIAuTc9iD9k3DAE6SsNvwniurIcxfA7Ghgwycknm0zWsZW7lwJxgkNdtAoGnBxnz9++/YlqivrrQO3tZ7FQ==|Ny31ZvRADOWgwTuAGlAbVnFbM3+yB9z3wlnUxzE+gAmsaohx53dkznBfiInTOMNMLcsLE11ltVQXTPe4wK46yh66flB4mZ9oL4fn3BW7VvS8mqZP5t2VSpJrR8mJrzz6loGGhbkp123z/dobM2WKUHt+efwRs66xapcieidplkaMjxGJUBmQyJSENsAEgdwi8DvyFQ== # comment
+
+  # -----------
+  # Multiline values
+  # -----------
+
+  MULTILINE_KV_PER_ENV: # comment
+    # comment
+    local: encrypted(default):M2w8SMKH2Iurl9DnOHgj++64PuD/vN3mLKNIqGblzzgmRiosGZjTb58EJpCR/cMgOtgc78e3jBfBzdtbUt7b87A2WoYLorjb1KxhyA==
+    dev: encrypted(dev):vc5c4JPavveBtqSWufhdASO64D52e4a9VT+8oyqMYM6m8vAoaw4IFJJpVE67l38NFkCnkKU6dRec9VEf96GT600sw3xwwe1jkIwisA==
+    prod: encrypted(prod):BSDfcvRAOqCpzGWtCBs6eG9ZI0KDCszU3UKHxzsfsgCHaqooyFlCx3UFk4/VHdNTA69uGV5Rl1oBGpjWhSZGheXQBaTch/kqBnSyBg==
+
+  MULTILINE_KV_FOR_SOME_ENVS_WITH_EPXLICIT_KEY: # comment
+    # comment
+    local:
+      value: encrypted(test):x2e3Y+teh9dptWFPpZKgObEAUL6xhmrJbSoCOMkWpFnvfIfZu8RefoGZwtPINY7VySM7u7xuXe29rUu+c2QXyx/rzSlI+WZEx+7Dsw==
+      key: test
+    dev:
+      value: encrypted(test):x2e3Y+teqddptWFPpoKgObJdUL6xhmrJbSooOMkWpFnsI4fZu8ReeYGZwtTINY7VySM7u79+Xe29rUu+ToY4QERilFWo0NDDXyewsg==
+      key: test
+    prod:
+      value: encrypted(test):x2e3Y+teqddptWFPpoKgObJdUL6xhmrJbSooOMkWpFnsI4fZu8ReeYGZwtTINY7VySM7u79+Xe29rUu+ToY4QERilFWo0NDDXyewsg==
+      key: test
+
+  MULTILINE_KV_FOR_PROD_WITH_STRING_TEMPLATING_AND_EXPLICIT_KEY: # comment
+    prod: # comment
+      value: encrypted(test):x2e3bfFI+PBr3EhxuZT2GKwCULCGiHb1cjoCfcM3kQnvVJ/6iNYuRpymydz+Df3x5Dxf+7ZnHZ/Ai8OUcA/j8CXSjGz+GvH/
+      key: test # comment
