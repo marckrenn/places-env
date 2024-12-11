@@ -46,12 +46,7 @@ jobs:
             -u __token__ -p ${{ secrets.PYPI_API_TOKEN }}
 
       - name: Create GitHub Release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ github.run_number }}
-          release_name: "Release v${{ github.run_number }}"
-          body: "Published to PyPI and GitHub Release"
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          generate_release_notes: true
+          make_latest: true
