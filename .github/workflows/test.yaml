@@ -3,9 +3,8 @@ name: Test
 on:
   workflow_call:
   push:
-    branches:
+    branches-ignore:
       - main
-      - develop
 
 jobs:
   test:
