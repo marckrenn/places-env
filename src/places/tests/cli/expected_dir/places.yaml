@@ -1,0 +1,36 @@
+environments:
+  local:
+    filepath: .env
+    watch: true
+  development:
+    filepath: .env.dev
+    watch: true
+    alias: [dev, stage]
+    key: dev
+  production:
+    filepath: .env.prod
+    watch: true
+    alias: [prod]
+    key: prod
+keys:
+  default: .places/keys/default
+  dev: .places/keys/dev
+  prod: .places/keys/prod
+  test: .places/keys/test
+settings:
+  cryptography:
+    iterations: 1
+variables:
+  PROJECT_NAME: test-project
+  HOST:
+    value: localhost
+    unencrypted: true
+  PORT:
+    local:
+      value: 8000
+    prod:
+      value: 8001
+    dev:
+      value: 8002
+  ADDRESS: ${HOST}:${PORT}
+  KV: '{"key":"value"}'

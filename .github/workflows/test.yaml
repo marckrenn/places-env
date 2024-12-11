@@ -11,8 +11,6 @@ jobs:
       checks: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Get Python version from pyproject.toml
         run: |
@@ -45,9 +43,6 @@ jobs:
       - name: Set directory permissions
         run: |
           chmod -R 777 .
-      
-      - name: Check if places is installed
-        run: uv run places --help
           
       - name: Run Tests
         run: uv run places run test -a
