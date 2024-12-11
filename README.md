@@ -34,7 +34,7 @@
 
 1. **Install _places-env_:**
 
-- via [pypi](https://pypi.org/):
+- via [pypi](https://pypi.org/project/places-env/):
 
     `pip install places-env`
 
