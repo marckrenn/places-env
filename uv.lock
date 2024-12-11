@@ -330,7 +330,7 @@ wheels = [
 
 [[package]]
 name = "places-env"
-version = "0.0.post1"
+version = "1.0.1.post7"
 source = { editable = "." }
 dependencies = [
     { name = "click" },

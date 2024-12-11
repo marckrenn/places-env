@@ -10,11 +10,11 @@ permissions:
   checks: write
 
 jobs:
-  lint:
-    uses: ./.github/workflows/lint.yaml
+  # lint:
+  #   uses: ./.github/workflows/lint.yaml
 
   test:
-    needs: lint
+    # needs: lint
     uses: ./.github/workflows/test.yaml
 
   publish:

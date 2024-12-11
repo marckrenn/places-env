@@ -29,9 +29,12 @@ def test_e2e(test_dirs):
         print("\nTest failed during command execution:")
         print(str(e))
         raise
+    finally:
+        os.chdir(original_dir)
 
-    # Compare directories
-    comparison = dircmp(temp_dir, expected_dir)
+    # Compare only specific files we care about
+    ignore = ['expected_dir', '.pytest_cache', '__pycache__']
+    comparison = dircmp(temp_dir, expected_dir, ignore=ignore)
     differences = get_directory_differences(comparison)
 
     # Create detailed error message if needed

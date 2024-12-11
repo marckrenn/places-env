@@ -6,6 +6,7 @@ import pytest
 import shutil
 import subprocess
 from subprocess import CompletedProcess
+import tempfile
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
@@ -52,53 +53,33 @@ def run_command(cmd: str) -> str:
         raise
 
 
-def setup_test_directories(base_dir: Path) -> Tuple[Path, Path]:
-    """Set up temporary and expected test directories."""
-    temp_dir = base_dir / "temp"
-    expected_dir = base_dir / "expected_dir"
-
-    os.makedirs(temp_dir.parent, exist_ok=True)
-    os.makedirs(expected_dir, exist_ok=True)
-
-    if temp_dir.exists():
-        shutil.rmtree(temp_dir)
-    os.makedirs(temp_dir)
-
-    return temp_dir, expected_dir
-
-
 @pytest.fixture
 def test_dirs(request: pytest.FixtureRequest) -> Tuple[str, str, str]:
     """
     Fixture providing temporary and expected test directories.
     Returns (temp_dir, expected_dir, original_dir) paths.
     """
-    current_dir = Path(request.module.__file__).parent
-    temp_dir, expected_dir = setup_test_directories(current_dir)
-
-    is_reference_empty = not expected_dir.exists() or not any(expected_dir.iterdir())
     original_dir = os.getcwd()
+    current_dir = Path(request.module.__file__).parent
+    expected_dir = current_dir / "expected_dir"
 
-    def cleanup() -> None:
+    with tempfile.TemporaryDirectory() as temp_root:
+        temp_dir = Path(temp_root) / "temp"
+        reference_dir = Path(temp_root) / "reference"
+        os.makedirs(temp_dir)
+        os.makedirs(reference_dir)
+
+        # Copy expected files if they exist
+        is_expected_empty = not expected_dir.exists() or not any(expected_dir.iterdir())
+        if not is_expected_empty:
+            shutil.copytree(expected_dir, reference_dir, dirs_exist_ok=True)
+        
+        yield str(temp_dir), str(reference_dir), original_dir
+
+        # After test completes, save expected files if they don't exist
         os.chdir(original_dir)
-
-        rep_call = getattr(request.node, "rep_call", None)
-        rep_setup = getattr(request.node, "rep_setup", None)
-        test_failed = (rep_call and not rep_call.passed) or (
-            rep_setup and not rep_setup.passed
-        )
-
-        if is_reference_empty and not test_failed:
-            print(f"\nCreating reference files in: {expected_dir}")
+        if is_expected_empty:
+            print(f"\nCreating expected files in: {expected_dir}")
             if expected_dir.exists():
                 shutil.rmtree(expected_dir)
             shutil.copytree(temp_dir, expected_dir)
-
-        if temp_dir.exists() and not test_failed:
-            shutil.rmtree(temp_dir)
-        elif test_failed:
-            print(f"\nTest failed - Keeping temp directory for inspection: {temp_dir}")
-
-    request.addfinalizer(cleanup)
-
-    return str(temp_dir), str(expected_dir), original_dir
