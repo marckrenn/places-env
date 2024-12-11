@@ -9,20 +9,10 @@ jobs:
     permissions:
       contents: write
       checks: write
-
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Show initial environment
-        run: |
-          echo "Current Directory:"
-          pwd
-          echo "Listing files in workspace:"
-          ls -R
-          echo "Environment Variables:"
-          env
 
       - name: Get Python version from pyproject.toml
         run: |
@@ -45,38 +35,19 @@ jobs:
 
       - name: Sync dependencies
         run: uv sync --all-extras --dev
-
+    
       - name: Build package
         run: uv build
 
-      - name: Inspect dist directory
-        run: |
-          echo "Listing dist contents:"
-          ls -lah dist
-
-      - name: Install places
+      - name: Install places-env
         run: uv pip install dist/*.whl
 
-      - name: Verify installation and dependencies
-        run: |
-          echo "Installed packages:"
-          uv pip list
-          echo "Checking if 'places' is on PATH:"
-          which places || echo "'places' command not found"
-
       - name: Set directory permissions
-        run: chmod -R 777 .
-
-      - name: Check environment before tests
         run: |
-          echo "Current Directory before tests:"
-          pwd
-          echo "Listing files again before tests:"
-          ls -R
-
-      - name: Run Tests (attempt 1 - using CLI directly)
+          chmod -R 777 .
+      
+      - name: Check if places is installed
+        run: uv run places --help
+          
+      - name: Run Tests
         run: uv run places run test -a
-
-      - name: Run Tests (attempt 2 - using Python module, if needed)
-        if: always() # This will run even if the previous step fails, for debugging
-        run: uv python -m places run test -a
