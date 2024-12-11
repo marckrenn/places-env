@@ -43,7 +43,7 @@ jobs:
         run: |
           uv build
           uv run twine upload dist/* \
-            -u api -p ${{ secrets.PYPI_API_TOKEN }}
+            -u __token__ -p ${{ secrets.PYPI_API_TOKEN }}
 
       - name: Create GitHub Release
         uses: actions/create-release@v1

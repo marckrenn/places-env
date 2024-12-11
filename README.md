@@ -1,4 +1,5 @@
-![example workflow](https://github.com/marckrenn/places-env/actions/workflows/test.yaml/badge.svg)
+![Main test status](https://github.com/marckrenn/places-env/actions/workflows/test.yaml/badge.svg?branch=main)
+![Develop test status](https://github.com/marckrenn/places-env/actions/workflows/test.yaml/badge.svg?branch=develop)
 # places-env: securely version control environment files
 > **Note:**  
 > _places-env_ is currently a proof of concept (PoC) and is **not ready for use in public projects or production environments**. Use it cautiously and only with private repositories.  
