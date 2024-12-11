@@ -6,6 +6,9 @@ on:
     branches:
       - main
       - develop
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: false 
 
 jobs:
   test:
@@ -14,24 +17,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get Python version from pyproject.toml
-        run: |
-          PYTHON_VERSION=$(grep "requires-python" pyproject.toml | sed -E 's/.*>=([0-9]+\.[0-9]+).*/\1/')
-          echo "PYTHON_VERSION=$PYTHON_VERSION" >> $GITHUB_ENV
-
-      - name: Cache uv dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.uv
-          key: uv-dependencies-${{ runner.os }}-${{ hashFiles('pyproject.toml') }}
-          restore-keys: |
-            uv-dependencies-${{ runner.os }}-
-
       - name: Install uv
         uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
       - name: Set up Python
-        run: uv python install ${{ env.PYTHON_VERSION }}
+        run: uv python install
 
       - name: Sync dependencies
         run: uv sync --all-extras --dev
@@ -41,10 +34,6 @@ jobs:
 
       - name: Install places-env
         run: uv pip install dist/*.whl
-
-      - name: Set directory permissions
-        run: |
-          chmod -R 777 .
           
       - name: Run Tests
         run: uv run places run test -a

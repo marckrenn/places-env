@@ -8,13 +8,46 @@ on:
     branches:
       - main
 
-jobs:
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
 
+jobs:
   test:
     uses: ./.github/workflows/test.yaml
 
+  check_version:
+    runs-on: ubuntu-latest
+    outputs:
+      version_changed: ${{ steps.check_version.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check version change
+        id: check_version
+        run: |
+          git fetch --tags
+          PREV_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
+          CURR_VERSION=$(grep -m1 "version = \".*\"" pyproject.toml | cut -d'"' -f2)
+          
+          # Extract major.minor.patch without any suffix
+          PREV_BASE=$(echo $PREV_VERSION | sed -E 's/^v?([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          CURR_BASE=$(echo $CURR_VERSION | sed -E 's/^v?([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          
+          if [ "$PREV_BASE" != "$CURR_BASE" ]; then
+            echo "Version change detected: $PREV_BASE -> $CURR_BASE"
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "No version change detected ($CURR_BASE), skipping publish"
+            echo "changed=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
   publish:
-    needs: test
+    needs: [test, check_version]
+    if: needs.check_version.outputs.version_changed == 'true'
     runs-on: ubuntu-latest
     
     steps:
@@ -23,24 +56,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get Python version from pyproject.toml
-        run: |
-          PYTHON_VERSION=$(grep "requires-python" pyproject.toml | sed -E 's/.*>=([0-9]+\.[0-9]+).*/\1/')
-          echo "PYTHON_VERSION=$PYTHON_VERSION" >> $GITHUB_ENV
-
-      - name: Cache uv dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.uv
-          key: uv-dependencies-${{ runner.os }}-${{ hashFiles('pyproject.toml') }}
-          restore-keys: |
-            uv-dependencies-${{ runner.os }}-
-
       - name: Install uv
         uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
       - name: Set up Python
-        run: uv python install ${{ env.PYTHON_VERSION }}
+        run: uv python install
 
       - name: Sync dependencies
         run: uv sync --all-extras --dev
