@@ -45,9 +45,9 @@ jobs:
             echo "Version change detected: $PREV_BASE -> $CURR_BASE"
             echo "changed=true" >> $GITHUB_OUTPUT
           else
-            echo "No version change detected ($CURR_BASE)"
+            echo "No version change detected ($CURR_BASE), skipping publish"
             echo "changed=false" >> $GITHUB_OUTPUT
-            exit 1
+          fi
 
   publish:
     needs: [test, check_version]
