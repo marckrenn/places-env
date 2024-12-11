@@ -56,7 +56,7 @@ def test_cli(test_dirs):
         os.chdir(original_dir)
 
     # Compare only specific files we care about
-    ignore = ['expected_dir', '.pytest_cache', '__pycache__']
+    ignore = ['expected_dir', '.pytest_cache', '__pycache__', '.gitignore']
     comparison = dircmp(temp_dir, expected_dir, ignore=ignore)
     differences = get_directory_differences(comparison)
 
