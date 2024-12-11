@@ -1,6 +1,7 @@
-![Main test status](https://github.com/marckrenn/places-env/actions/workflows/test.yaml/badge.svg?branch=main)
-![Develop test status](https://github.com/marckrenn/places-env/actions/workflows/test.yaml/badge.svg?branch=develop)
+![Main test status](https://img.shields.io/github/actions/workflow/status/marckrenn/places-env/test.yaml?branch=main&label=Test%20(main))
+![Develop test status](https://img.shields.io/github/actions/workflow/status/marckrenn/places-env/test.yaml?branch=develop&label=Test%20(develop))
 [![PyPI - Version](https://img.shields.io/pypi/v/places-env)](https://pypi.org/project/places-env/)
+![GitHub License](https://img.shields.io/github/license/marckrenn/places-env)
 # places-env: securely version control environment files
 > **Note:**  
 > _places-env_ is currently a proof of concept (PoC) and is **not ready for use in public projects or production environments**. Use it cautiously and only with private repositories.  
@@ -8,8 +9,8 @@
 
 ## Motivation / The heck is _places-env_?
 
-![Schematic overview of places](./images/places-dark.svg#gh-dark-mode-only)
-![Schematic overview of places](./images/places-light.svg#gh-light-mode-only)
+![Schematic overview of places](https://raw.githubusercontent.com/marckrenn/places-env/5a99cc9245ca6c8ea9d3cb4adb67d2f2cee56c09/images/places-dark.svg?sanitize=true#gh-dark-mode-only)
+![Schematic overview of places](https://raw.githubusercontent.com/marckrenn/places-env/5a99cc9245ca6c8ea9d3cb4adb67d2f2cee56c09/images/places-light.svg?sanitize=true#gh-light-mode-only)
 
 - _places-env_ is a self-contained, completely free open-source (FOSS) alternative to [HashiCorp Vault](https://www.hashicorp.com/products/vault), [Infisical](https://infisical.com/), [dotenv-vault](https://github.com/dotenv-org/dotenv-vault) and [sops](https://github.com/getsops/sops).  
 - Leverages a single source of truth (SSOT) [`places.yaml`](#placesyaml) for deriving multiple environment files.
@@ -26,7 +27,7 @@
 
 <summary>Fallback Image (for Github Mobile users)</summary>
 
-![Schematic overview of places](./images/places-dark.png)
+![Schematic overview of places](https://github.com/marckrenn/places-env/blob/develop/images/places-dark.png?raw=True)
 
 </details>
 
