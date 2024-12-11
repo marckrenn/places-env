@@ -24,6 +24,11 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
+      - name: Get Python version from pyproject.toml
+        run: |
+          PYTHON_VERSION=$(grep "requires-python" pyproject.toml | sed -E 's/.*>=([0-9]+\.[0-9]+).*/\1/')
+          echo "PYTHON_VERSION=$PYTHON_VERSION" >> $GITHUB_ENV
+
       - name: Cache uv dependencies
         uses: actions/cache@v3
         with:
@@ -36,14 +41,14 @@ jobs:
         uses: astral-sh/setup-uv@v4
 
       - name: Set up Python
-        run: uv python install
+        run: uv python install ${{ env.PYTHON_VERSION }}
 
       - name: Sync dependencies
         run: uv sync --all-extras --dev
 
       - name: Build and Publish to PyPI
         run: |
-          uv run python -m build
+          uv build
           uv run twine upload dist/* \
             --api-token ${{ secrets.PYPI_API_TOKEN }}
 

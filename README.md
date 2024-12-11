@@ -1,3 +1,4 @@
+![example workflow](https://github.com/marckrenn/places-env/actions/workflows/test.yaml/badge.svg)
 # places-env: securely version control environment files
 > **Note:**  
 > _places-env_ is currently a proof of concept (PoC) and is **not ready for use in public projects or production environments**. Use it cautiously and only with private repositories.  

@@ -54,7 +54,7 @@ def run_command(cmd: str) -> str:
 
 
 @pytest.fixture
-def test_dirs(request: pytest.FixtureRequest) -> Tuple[str, str, str]:
+def test_dirs(request: pytest.FixtureRequest):
     """
     Fixture providing temporary and expected test directories.
     Returns (temp_dir, expected_dir, original_dir) paths.
