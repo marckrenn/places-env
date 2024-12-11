@@ -47,7 +47,8 @@ def initialize_places(template_name=None, list_templates=False):
             raise click.ClickException(f"Template '{template_name}' not found")
         shutil.copy2(template_path, "places.yaml")
         print(f"Initialized Places using '{template_name}' template")
-        generate_key("default")
+        if template_name != "_e2e_test":  # Skip key generation for e2e_test, ooff
+            generate_key("default")
     else:
         open("places.yaml", "w").close()
         print("Initialized Places with empty configuration")

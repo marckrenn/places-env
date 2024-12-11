@@ -1,33 +1,83 @@
 name: Publish to PyPI
 
+permissions:
+  contents: write
+
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      skip_version_check:
+        description: 'Skip version check'
+        type: boolean
+        default: false
+        required: false
 
 jobs:
-  lint-and-test:
-    uses: ./.github/workflows/lint_and_test.yml
-    with:
-      python-version: "3.10"
+  test:
+    uses: ./.github/workflows/test.yaml
+
+  check_version:
+    runs-on: ubuntu-latest
+    outputs:
+      version_changed: ${{ steps.check_version.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check version change
+        id: check_version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.skip_version_check }}" == "true" ]]; then
+            echo "Skip version check requested"
+            echo "changed=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          git fetch --tags
+          
+          # Get current git tag
+          CURR_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          
+          # Get latest GitHub release tag
+          PREV_VERSION=$(gh release view --json tagName --jq .tagName || echo "v0.0.0")
+          
+          # Extract major.minor.patch without any suffix
+          PREV_BASE=$(echo $PREV_VERSION | sed -E 's/^v?([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          CURR_BASE=$(echo $CURR_VERSION | sed -E 's/^v?([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          
+          echo "GitHub release version: $PREV_VERSION ($PREV_BASE)"
+          echo "Current git version: $CURR_VERSION ($CURR_BASE)"
+          
+          if [ "$PREV_BASE" != "$CURR_BASE" ]; then
+            echo "Version change detected: $PREV_BASE -> $CURR_BASE"
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "No version change detected ($CURR_BASE), skipping publish"
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
 
   publish:
+    needs: [test, check_version]
+    if: needs.check_version.outputs.version_changed == 'true'
     runs-on: ubuntu-latest
-    needs: lint-and-test
+    
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-
-      - name: Cache uv dependencies
-        uses: actions/cache@v3
         with:
-          path: ~/.uv
-          key: uv-dependencies-${{ runner.os }}-${{ hashFiles('pyproject.toml') }}
-          restore-keys: |
-            uv-dependencies-${{ runner.os }}-
+          fetch-depth: 0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
       - name: Set up Python
         run: uv python install
@@ -37,18 +87,17 @@ jobs:
 
       - name: Build and Publish to PyPI
         run: |
-          uv run python -m build
+          uv build
           uv run twine upload dist/* \
-            -u ${{ secrets.PYPI_USERNAME }} \
-            -p ${{ secrets.PYPI_PASSWORD }}
+            -u __token__ -p ${{ secrets.PYPI_API_TOKEN }}
+      
+      - uses: actions-ecosystem/action-get-latest-tag@v1
+        id: get-latest-tag
 
       - name: Create GitHub Release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ github.run_number }}
-          release_name: "Release v${{ github.run_number }}"
-          body: "Published to PyPI and GitHub Release"
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          generate_release_notes: true
+          make_latest: true
+          name: ${{ steps.get-latest-tag.outputs.tag }}
+          tag_name: ${{ steps.get-latest-tag.outputs.tag }}

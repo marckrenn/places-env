@@ -1,7 +1,7 @@
 [project]
 name = "places-env"
 dynamic = ["version"]
-description = ".envs for humans"
+description = "securely version control environment files"
 readme = { file = "README.md", content-type = "text/markdown" }
 license = { file = "LICENSE" }
 keywords = ["environments", "environment variables", "secrets", "env", "tool", "infisical", "dotenv", "hashicorp", "vault"]
@@ -40,6 +40,7 @@ dev = [
     "sphinx-markdown-builder>=0.6.7",
     "black==24.10.*",
     "pyflakes==3.2.*",
+    "twine==6.0.*"
 ]
 
 [build-system]

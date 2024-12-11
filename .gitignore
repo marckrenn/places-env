@@ -149,3 +149,10 @@ cython_debug/
 
 # VSCode
 .vscode/
+
+# places-env specific
+tests/**/temp/
+tests/**/temp/*
+
+# Do not ignore .env files in any subdirectories (required for tests)
+!**/.env

@@ -1,3 +1,6 @@
+![Main test status](https://github.com/marckrenn/places-env/actions/workflows/test.yaml/badge.svg?branch=main)
+![Develop test status](https://github.com/marckrenn/places-env/actions/workflows/test.yaml/badge.svg?branch=develop)
+[![PyPI - Version](https://img.shields.io/pypi/v/places-env)](https://pypi.org/project/places-env/)
 # places-env: securely version control environment files
 > **Note:**  
 > _places-env_ is currently a proof of concept (PoC) and is **not ready for use in public projects or production environments**. Use it cautiously and only with private repositories.  
@@ -31,9 +34,9 @@
 
 1. **Install _places-env_:**
 
-- via [pypi](https://pypi.org/):
+- via [pypi](https://pypi.org/project/places-env/):
 
-    `pip install -i https://test.pypi.org/simple/ places-env`
+    `pip install places-env`
 
 2. **Init project:** In terminal
   - `cd` into your project  

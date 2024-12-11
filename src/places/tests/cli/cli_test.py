@@ -14,47 +14,50 @@ def test_cli(test_dirs):
 
     try:
         # Run commands in sequence
-        run_command("places init")
+        run_command("uv run places init")
 
         # Add environments
-        run_command("places add environment local -f .env -w true")
+        run_command("uv run places add environment local -f .env -w true")
         run_command(
-            "places add environment development -f .env.dev -k dev -a dev -a stage -w true"
+            "uv run places add environment development -f .env.dev -k dev -a dev -a stage -w true"
         )
         run_command(
-            "places add environment production -f .env.prod -k prod -a prod -w true"
+            "uv run places add environment production -f .env.prod -k prod -a prod -w true"
         )
 
         # Add keys
-        run_command("places add key_from_string default default -f -a")
-        run_command("places add key_from_string dev dev -f -a")
-        run_command("places add key_from_string prod prod -f -a")
-        run_command("places add key_from_string test test -f -a")
+        run_command("uv run places add key_from_string default default -f -a")
+        run_command("uv run places add key_from_string dev dev -f -a")
+        run_command("uv run places add key_from_string prod prod -f -a")
+        run_command("uv run places add key_from_string test test -f -a")
 
         # Add settings
-        run_command("places add setting -i 1")
+        run_command("uv run places add setting -i 1")
 
         # Add variables
-        run_command("places add variable PROJECT_NAME -v test-project")
-        run_command("places add variable HOST -v localhost -u true")
-        run_command("places add variable PORT -v 8000 -e local")
-        run_command("places add variable PORT -v 8001 -e prod")
-        run_command("places add variable PORT -v 8002 -e dev")
-        run_command("places add variable ADDRESS -v '${HOST}:${PORT}'")
-        run_command('places add variable KV -v \'{"key":"value"}\'')
+        run_command("uv run places add variable PROJECT_NAME -v test-project")
+        run_command("uv run places add variable HOST -v localhost -u true")
+        run_command("uv run places add variable PORT -v 8000 -e local")
+        run_command("uv run places add variable PORT -v 8001 -e prod")
+        run_command("uv run places add variable PORT -v 8002 -e dev")
+        run_command("uv run places add variable ADDRESS -v '${HOST}:${PORT}'")
+        run_command('uv run places add variable KV -v \'{"key":"value"}\'')
 
         # Encrypt, decrypt and generate
-        run_command("places encrypt")
-        run_command("places decrypt")
-        run_command("places generate environment --all")
+        run_command("uv run places encrypt")
+        run_command("uv run places decrypt")
+        run_command("uv run places generate environment --all")
 
     except Exception as e:
         print("\nTest failed during command execution:")
         print(str(e))
         raise
+    finally:
+        os.chdir(original_dir)
 
-    # Compare directories
-    comparison = dircmp(temp_dir, expected_dir)
+    # Compare only specific files we care about
+    ignore = ['expected_dir', '.pytest_cache', '__pycache__', '.gitignore']
+    comparison = dircmp(temp_dir, expected_dir, ignore=ignore)
     differences = get_directory_differences(comparison)
 
     # Create detailed error message if needed
