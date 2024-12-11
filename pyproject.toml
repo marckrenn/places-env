@@ -1,7 +1,7 @@
 [project]
 name = "places-env"
 dynamic = ["version"]
-description = ".envs for humans"
+description = "securely version control environment files"
 readme = { file = "README.md", content-type = "text/markdown" }
 license = { file = "LICENSE" }
 keywords = ["environments", "environment variables", "secrets", "env", "tool", "infisical", "dotenv", "hashicorp", "vault"]
