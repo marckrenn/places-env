@@ -69,17 +69,11 @@ def test_dirs(request: pytest.FixtureRequest) -> Tuple[str, str, str]:
         os.makedirs(temp_dir)
         os.makedirs(reference_dir)
 
-        # Copy expected files if they exist
-        is_expected_empty = not expected_dir.exists() or not any(expected_dir.iterdir())
-        if not is_expected_empty:
+        # Always copy expected files if they exist
+        if expected_dir.exists():
             shutil.copytree(expected_dir, reference_dir, dirs_exist_ok=True)
         
         yield str(temp_dir), str(reference_dir), original_dir
 
-        # After test completes, save expected files if they don't exist
+        # Change back to original directory
         os.chdir(original_dir)
-        if is_expected_empty:
-            print(f"\nCreating expected files in: {expected_dir}")
-            if expected_dir.exists():
-                shutil.rmtree(expected_dir)
-            shutil.copytree(temp_dir, expected_dir)
