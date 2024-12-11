@@ -46,11 +46,14 @@ jobs:
           uv build
           uv run twine upload dist/* \
             -u __token__ -p ${{ secrets.PYPI_API_TOKEN }}
+      
+      - uses: actions-ecosystem/action-get-latest-tag@v1
+        id: get-latest-tag
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           make_latest: true
-          name: ${{ steps.version.outputs.version }}
-          tag_name: ${{ steps.version.outputs.version }}
+          name: ${{ steps.get-latest-tag.outputs.tag }}
+          tag_name: ${{ steps.get-latest-tag.outputs.tag }}
