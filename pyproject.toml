@@ -40,6 +40,7 @@ dev = [
     "sphinx-markdown-builder>=0.6.7",
     "black==24.10.*",
     "pyflakes==3.2.*",
+    "twine==6.0.*"
 ]
 
 [build-system]
