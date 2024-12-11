@@ -23,23 +23,31 @@ jobs:
       
       - name: Check version change
         id: check_version
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git fetch --tags
-          PREV_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
-          CURR_VERSION=$(grep -m1 "version = \".*\"" pyproject.toml | cut -d'"' -f2)
+          
+          # Get current git tag
+          CURR_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          
+          # Get latest GitHub release tag
+          PREV_VERSION=$(gh release view --json tagName --jq .tagName || echo "v0.0.0")
           
           # Extract major.minor.patch without any suffix
           PREV_BASE=$(echo $PREV_VERSION | sed -E 's/^v?([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
           CURR_BASE=$(echo $CURR_VERSION | sed -E 's/^v?([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
           
+          echo "GitHub release version: $PREV_VERSION ($PREV_BASE)"
+          echo "Current git version: $CURR_VERSION ($CURR_BASE)"
+          
           if [ "$PREV_BASE" != "$CURR_BASE" ]; then
             echo "Version change detected: $PREV_BASE -> $CURR_BASE"
             echo "changed=true" >> $GITHUB_OUTPUT
           else
-            echo "No version change detected ($CURR_BASE), skipping publish"
+            echo "No version change detected ($CURR_BASE)"
             echo "changed=false" >> $GITHUB_OUTPUT
             exit 1
-          fi
 
   publish:
     needs: [test, check_version]
