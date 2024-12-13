@@ -21,7 +21,7 @@
   - Changes remain 'human-trackable' — even when values are encrypted
   - Contrary to [sops](https://github.com/getsops/sops), encryption keys can be assigned either per environment or on a per-value basis
 - Provides a [straightforward setup](#getting-started) with no dependency on external services or libraries.  
-- [`places watch start`](#watch-start) (persistently) tracks changes in [`places.yaml`](#placesyaml)/[`places.enc.yaml`](#placesencyaml) and automatically handles [encryption](#encrypt), [decryption](#decrypt), [keeps `.gitignore` up-to-date](#sync-gitignore), and [auto-updates](#generate-environment) environment files. So it's essnetially _set and forget_.
+- [`places watch start`](#watch-start) (persistently) tracks changes in [`places.yaml`](#placesyaml)/[`places.enc.yaml`](#placesencyaml) and automatically handles [encryption](#encrypt), [decryption](#decrypt), [keeps `.gitignore` up-to-date](#sync-gitignore), and [auto-updates](#generate-environment) environment files. So it's essentially _set and forget_.
 
 <details>
 
