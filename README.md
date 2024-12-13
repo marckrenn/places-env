@@ -17,7 +17,7 @@
 - Similar to [sops](https://github.com/getsops/sops), _places-env_ encrypts only the values in [`places.yaml`](#placesyaml), resulting in [`places.enc.yaml`](#placesencyaml), which can be securely checked into git:  
   - Congrats, your SSOT is now version-controlled 🎉
   - Always synchronized with collaborators
-  - Fully in-sync with branches and tags (try doing that with [Infisical](https://infisical.com/) & co. 😉) 
+  - Fully in-sync with the rest of your code, branches and tags (try doing that with [Infisical](https://infisical.com/) & co. 😉) 
   - Changes remain 'human-trackable' — even when values are encrypted
   - Contrary to [sops](https://github.com/getsops/sops), encryption keys can be assigned either per environment or on a per-value basis
 - Provides a [straightforward setup](#getting-started) with no dependency on external services or libraries.  
