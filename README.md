@@ -565,9 +565,7 @@ variables:
 
 ## Roadmap (unordered)
 
-* **DEV/CI/CD:** Add infos regarding development and add appropriate CI/CD
 * **Hombrew:** Distribute _places-env_ also via [Homebrew](https://brew.sh/)
-* **CI/CD:** Provide a convient Github Action and Gitlab [CI/CD](#cicd) integration for _places-env_.
 * **Comments in environment files**: Add `comment`property to variables
 * **Layouting in environment files**: Add "meta-variables" (eg. `places.section`) that add sections and linebreaks at gen-time.
 
