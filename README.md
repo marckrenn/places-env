@@ -69,6 +69,14 @@
   - Recommended methods include shared password managers like [Bitwarden](https://bitwarden.com/), secure one-time sharing services, or dedicated tools such as [Amazon KMS](https://aws.amazon.com/kms/).
   - Collaborators without the necessary decryption keys can still add and edit new secrets but are restricted from reading existing ones.
 
+## Example / Demo
+
+A "live" example / demo project can be found [here](https://github.com/marckrenn/places-env-example).
+
+## CI/CD
+
+_places-env_ has a companion GitHub Action you can find on the GitHub Marketplace [here](https://github.com/marketplace/actions/places-env). It installs _places-env_, injects crypto keys and generates environment files so that they can be used downstream in your CI/CD workflow.
+
 ## Documentation
 
 ### `places.yaml`
@@ -499,14 +507,6 @@ variables:
     [`places decrypt`](#decrypt)
 
 </details>
-
-## CI/CD
-
-_places-env_ has a companion GitHub Action you can find on the GitHub Marketplace [here](https://github.com/marketplace/actions/places-env). It installs _places-env_, injects crypto keys and generates environment files so that they can be used downstream in your CI/CD workflow.
-
-## Example / Demo
-
-A "live" example / demo project can be found [here](https://github.com/marckrenn/places-env-example).
 
 ## FAQ
 
