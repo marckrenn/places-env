@@ -502,10 +502,11 @@ variables:
 
 ## CI/CD
 
-Coming soon!™️
-For now, you can integrate _places-env_ into your Python project or include it during CI build time:
-* Make sure to copy the required [keys](#key--keys) into `./places/keys` and
-* Run [`places generate environment`](#generate-environment) command for the required environment.
+_places-env_ has a companion GitHub Action you can find on the GitHub Marketplace [here](https://github.com/marketplace/actions/places-env). It installs _places-env_, injects crypto keys and generates environment files so that they can be used downstream in your CI/CD workflow.
+
+## Example / Demo
+
+A "live" example / demo project can be found [here](https://github.com/marckrenn/places-env-example).
 
 ## FAQ
 
