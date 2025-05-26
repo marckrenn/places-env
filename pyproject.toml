@@ -25,9 +25,9 @@ classifiers = [
 ]
 
 [project.urls]
-homepage = "https://github.com/marckrenn/places"
-repository = "https://github.com/marckrenn/places"
-issues = "https://github.com/marckrenn/places/issues"
+homepage = "https://github.com/marckrenn/places-env"
+repository = "https://github.com/marckrenn/places-env"
+issues = "https://github.com/marckrenn/places-env/issues"
 
 [project.scripts]
 places = "places.cli:cli"
