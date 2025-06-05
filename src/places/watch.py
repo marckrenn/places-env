@@ -179,7 +179,17 @@ def create_macos_launch_agent():
     agent_path = Path.home() / "Library/LaunchAgents"
     agent_path.mkdir(parents=True, exist_ok=True)
 
-    executable_path = str(Path(sys.executable).resolve())
+    # Use virtual environment python if available, otherwise current python
+    venv_path = os.environ.get("VIRTUAL_ENV")
+    if venv_path and Path(venv_path).exists():
+        venv_python = Path(venv_path) / "bin" / "python"
+        if venv_python.exists():
+            executable_path = str(venv_python)  # Don't resolve symlinks
+        else:
+            executable_path = str(Path(sys.executable).resolve())
+    else:
+        executable_path = str(Path(sys.executable).resolve())
+    
     places_path = str(Path.cwd().resolve())
     log_dir = Path.home() / "Library/Logs/places" / project_name
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -195,9 +205,16 @@ def create_macos_launch_agent():
             os.chown(log, os.getuid(), os.getgid())
 
     venv_path = os.environ.get("VIRTUAL_ENV")
+    
+    # Add src directory to PYTHONPATH for development installations
+    src_path = str(Path(places_path) / "src")
+    pythonpath_parts = [places_path]
+    if Path(src_path).exists():
+        pythonpath_parts.append(src_path)
+    
     env_vars = {
         "PATH": os.environ.get("PATH", ""),
-        "PYTHONPATH": places_path,
+        "PYTHONPATH": ":".join(pythonpath_parts),
         "LANG": "en_US.UTF-8",
         "LC_ALL": "en_US.UTF-8",
         "PYTHONUNBUFFERED": "1",
@@ -241,6 +258,9 @@ def create_macos_launch_agent():
                 f"Python: {executable_path}\n"
                 f"Working Dir: {places_path}\n"
                 f"Virtual Env: {venv_path or 'None'}\n"
+                f"sys.executable: {sys.executable}\n"
+                f"VIRTUAL_ENV exists: {venv_path and Path(venv_path).exists()}\n"
+                f"venv python exists: {venv_path and (Path(venv_path) / 'bin' / 'python').exists()}\n"
             )
 
         with open(plist_file, "wb") as f:
@@ -252,16 +272,25 @@ def create_macos_launch_agent():
             ["launchctl", "unload", str(plist_file)], capture_output=True, check=False
         )
 
+        load_result = subprocess.run(
+            ["launchctl", "load", "-w", str(plist_file)], capture_output=True, text=True
+        )
+
+        if load_result.returncode != 0:
+            print(f"Error loading LaunchAgent: {load_result.stderr}")
+            print(
+                f"Manual load command: launchctl load -w {str(plist_file)}"
+            )
+            return False, {}
+
         list_result = subprocess.run(
             ["launchctl", "list", agent_name], capture_output=True, text=True
         )
 
         if list_result.returncode != 0:
-            print(
-                "Warning: LaunchAgent may not be running. Try running 'launchctl load -w "
-                + str(plist_file)
-                + "'"
-            )
+            print(f"Warning: LaunchAgent {agent_name} may not be running properly")
+            print(f"Check logs at: {log_file}")
+            print(f"Error logs at: {err_log_file}")
 
         return True, {
             "service_path": str(plist_file),
@@ -308,8 +337,11 @@ def remove_systemd_service():
 def remove_macos_launch_agent():
     agent_name, agent_path = get_macos_launch_agent_details()
 
-    subprocess.run(["launchctl", "unload", str(agent_path)], capture_output=True)
-    subprocess.run(["launchctl", "remove", agent_name], capture_output=True)
+    unload_result = subprocess.run(["launchctl", "unload", str(agent_path)], capture_output=True, text=True)
+    remove_result = subprocess.run(["launchctl", "remove", agent_name], capture_output=True, text=True)
+    
+    # Also try to remove any running instances
+    subprocess.run(["launchctl", "stop", agent_name], capture_output=True)
 
     if agent_path.exists():
         agent_path.unlink()
@@ -335,14 +367,20 @@ def get_daemon_log_paths():
 
 def daemonize():
     """Fork the process to run as a daemon."""
+    if platform.system() == "Darwin":
+        print("Warning: Daemon mode on macOS may have issues. Consider using --service instead.")
+    
     working_dir = os.getcwd()
 
     try:
         pid = os.fork()
         if pid > 0:
+            print(f"Daemon started with PID: {pid}")
             sys.exit(0)
     except OSError as err:
         sys.stderr.write(f"fork #1 failed: {err}\n")
+        print("Fork failed. Your system may not support daemon mode.")
+        print("Try using --service instead: places watch start --service")
         sys.exit(1)
 
     os.setsid()
@@ -373,11 +411,13 @@ def daemonize():
 
 def start_watch(service=False, daemon=False):
     if service:
+        # Clean up any existing services first
+        remove_system_service()
+        print("Setting up new system service...")
+        
         success, paths = setup_system_service()
         if success:
-            print(
-                f"places watcher installed as system service on {platform.system()} at"
-            )
+            print(f"✓ places watcher installed as system service on {platform.system()}")
             print(f"Service location: {paths.get('service_path')}")
             if "log_cmd" in paths:  # Linux
                 print(f"View logs with: {paths.get('log_cmd')}")
@@ -387,7 +427,7 @@ def start_watch(service=False, daemon=False):
             print("Uninstall service with: places watch stop --service")
             return
         else:
-            print(f"Failed to install system service on {platform.system()}")
+            print(f"✗ Failed to install system service on {platform.system()}")
             return
 
     if daemon:
