@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(launchctl:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(python -m places.cli watch:*)",
+      "Bash(uv run:*)",
+      "Bash(uv sync:*)",
+      "Bash(.venv/bin/pip list:*)",
+      "Bash(python:*)",
+      "Bash(uv pip:*)"
+    ],
+    "deny": []
+  }
+}
