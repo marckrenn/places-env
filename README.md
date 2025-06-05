@@ -2,7 +2,7 @@
 ![Develop test status](https://img.shields.io/github/actions/workflow/status/marckrenn/places-env/test.yaml?branch=develop&label=Test%20(develop))
 [![PyPI - Version](https://img.shields.io/pypi/v/places-env)](https://pypi.org/project/places-env/)
 ![GitHub License](https://img.shields.io/github/license/marckrenn/places-env)
-# places-env: securely version control environment files
+# places-env: secure version control of environment files
 > **Note:**  
 > _places-env_ is currently a proof of concept (PoC) and is **not ready for use in public projects or production environments**. Use it cautiously and only with private repositories.  
 > If you appreciate the ideas behind _places-env_, consider contributing by submitting pull requests!
@@ -17,11 +17,11 @@
 - Similar to [sops](https://github.com/getsops/sops), _places-env_ encrypts only the values in [`places.yaml`](#placesyaml), resulting in [`places.enc.yaml`](#placesencyaml), which can be securely checked into git:  
   - Congrats, your SSOT is now version-controlled 🎉
   - Always synchronized with collaborators
-  - Fully in-sync with branches and tags (try doing that with [Infisical](https://infisical.com/) & co. 😉) 
+  - Fully in-sync with the rest of your code, branches and tags (try doing that with [Infisical](https://infisical.com/) & co. 😉) 
   - Changes remain 'human-trackable' — even when values are encrypted
   - Contrary to [sops](https://github.com/getsops/sops), encryption keys can be assigned either per environment or on a per-value basis
 - Provides a [straightforward setup](#getting-started) with no dependency on external services or libraries.  
-- [`places watch start`](#watch-start) (persistently) tracks changes in [`places.yaml`](#placesyaml)/[`places.enc.yaml`](#placesencyaml) and automatically handles [encryption](#encrypt), [decryption](#decrypt), [keeps `.gitignore` up-to-date](#sync-gitignore), and [auto-updates](#generate-environment) environment files. So it's essnetially _set and forget_.
+- [`places watch start`](#watch-start) (persistently) tracks changes in [`places.yaml`](#placesyaml)/[`places.enc.yaml`](#placesencyaml) and automatically handles [encryption](#encrypt), [decryption](#decrypt), [keeps `.gitignore` up-to-date](#sync-gitignore), and [auto-updates](#generate-environment) environment files. So it's essentially _set and forget_.
 
 <details>
 
@@ -68,6 +68,14 @@
   - If you're working with collaborators, **securely** share your crypto keys located in `.places/keys` with them.
   - Recommended methods include shared password managers like [Bitwarden](https://bitwarden.com/), secure one-time sharing services, or dedicated tools such as [Amazon KMS](https://aws.amazon.com/kms/).
   - Collaborators without the necessary decryption keys can still add and edit new secrets but are restricted from reading existing ones.
+
+## Example / Demo
+
+A "live" example / demo project can be found [here](https://github.com/marckrenn/places-env-example).
+
+## CI/CD
+
+_places-env_ has a companion GitHub Action you can find on the GitHub Marketplace [here](https://github.com/marketplace/actions/places-env). It installs _places-env_, injects crypto keys and generates environment files so that they can be used downstream in your CI/CD workflow.
 
 ## Documentation
 
@@ -500,13 +508,6 @@ variables:
 
 </details>
 
-## CI/CD
-
-Coming soon!™️
-For now, you can integrate _places-env_ into your Python project or include it during CI build time:
-* Make sure to copy the required [keys](#key--keys) into `./places/keys` and
-* Run [`places generate environment`](#generate-environment) command for the required environment.
-
 ## FAQ
 
 - **The hell is this? Do you have _any_ idea what you're doing?**  
@@ -521,23 +522,23 @@ For now, you can integrate _places-env_ into your Python project or include it d
 
 - **What happens if a collaborator doesn't have all the crypto keys defined in [`places.yaml`](#placesyaml)?**
 
-  - **For per-environment values (e.g., `PORT: local: 8000`)**:  
+  > - **For per-environment values (e.g., `PORT: local: 8000`)**:  
     If a collaborator lacks the required keys, [`places decrypt`](#decrypt) will fail to decrypt the encrypted value. In this case, the unencrypted value will remain in [`places.yaml`](#placesyaml) as-is. When re-encrypting with [`places encrypt`](#encrypt), the existing encrypted value will be written to [`places.enc.yaml`](#placesencyaml) unchanged.
 
-  - **For shorthand/compound values (e.g., `PROJECT_NAME: your-project-name`) that use multi/compound keys**:  
+  > - **For shorthand/compound values (e.g., `PROJECT_NAME: your-project-name`) that use multi/compound keys**:  
     If the user possesses any of the required keys (e.g. `default` and `dev` out of `encrypted(default|dev|prod):kvvmBt…`), [`places decrypt`](#decrypt) will successfully decrypt the value. When encrypting with [`places encrypt`](#encrypt), all keys (e.g. `default` and `dev`) available to the user will be used to encrypt the value.
 
-  - **Important Consideration**:  
+  > - **Important Consideration**:  
     Compound values should only be used for non-sensitive information. For sensitive values, define them explicitly per environment.
 
 - **Is _places-env_ secure?**  
-    > Debateable, but broadly speaking it should be, yes – especially when used in private repositories and with people you trust. In general, _places-env_ exposes encrypted data to others (collaborators or the public), meaning that with enough time, effort and ressources, encrypted values could be cracked. However, _places-env_ was designed to make this unlikely within reasonable boundaries. For instance:  
+    > Arguably, yes—especially when used in private repositories and among trusted collaborators. In general, _places-env_ exposes encrypted data to others (collaborators or the public), meaning that with enough time, effort and ressources, encrypted values could eventually be cracked. However, _places-env_ was designed to make this unlikely within reasonable boundaries. For instance:  
     > - [`places sync gitignore`](#sync-gitignore) is executed automatically by default, which should help prevent unencrypted data from being committed.  
-    > - [`places generate key`](#generate-key) generates cryptographic keys with appropriate length and entropy.  
-    > - `AES-512-GCM` with 210,000 iterations is used as per [OWASP recommendations](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html) (see [settings options](#settings) for more details).  
+    > - [`places generate key`](#generate-key) generates cryptographic keys with appropriate length and entropy.
+    > - Per default `AES-512-GCM` with 210,000 iterations (per [OWASP recommendations](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)) is used for cryptographic opersions (see [settings options](#settings) for more details).  
     >  
-    > That said, some design decisions has been made that may weaken security:  
-    > - By default, a deterministic salt is used to allow for deterministic tracking of changes, which introduces some attack vectors. If security is critical, you can choose alternative salting strategies in [settings options](#settings).  
+    > That said, some design decisions have been made that may weaken security:
+    > - By default, a deterministic salt is used to allow for deterministic tracking of changes, which introduces some potential attack vectors. If security is critical, you can choose alternative salting strategies in [settings options](#settings).  
     > - The cryptographic key exchange between collaborators is manual, so it’s your responsibility to ensure it happens securely.  
     > - When using the shorthand to define a variable for multiple environment files, any encryption key can decrypt the encrypted value.  
     > - **If you identify any inherent security flaws in _places-env_, please let me know ASAP. Thank you!**
@@ -564,17 +565,16 @@ For now, you can integrate _places-env_ into your Python project or include it d
 
 ## Roadmap (unordered)
 
-* **DEV/CI/CD:** Add infos regarding development and add appropriate CI/CD
 * **Hombrew:** Distribute _places-env_ also via [Homebrew](https://brew.sh/)
-* **CI/CD:** Provide a convient Github Action and Gitlab [CI/CD](#cicd) integration for _places-env_.
 * **Comments in environment files**: Add `comment`property to variables
 * **Layouting in environment files**: Add "meta-variables" (eg. `places.section`) that add sections and linebreaks at gen-time.
 
 ## Known issues / Limitations
 * _places-env_ does not adhere to the [YAML specifications](https://yaml.org/).
-* Only array/lists in square brackets are supported, block style arrays aren't supported (yet).
+* Only arrays/lists in square brackets are supported, block style arrays aren't (yet).
 * Single-line KV/JSON needs to be wrapped in quotes.
 
+***
 ***
 
 # places CLI Documentation

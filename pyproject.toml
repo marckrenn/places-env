@@ -25,9 +25,9 @@ classifiers = [
 ]
 
 [project.urls]
-homepage = "https://github.com/marckrenn/places"
-repository = "https://github.com/marckrenn/places"
-issues = "https://github.com/marckrenn/places/issues"
+homepage = "https://github.com/marckrenn/places-env"
+repository = "https://github.com/marckrenn/places-env"
+issues = "https://github.com/marckrenn/places-env/issues"
 
 [project.scripts]
 places = "places.cli:cli"
@@ -48,5 +48,5 @@ requires = ["setuptools>=61", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
-version_scheme = "post-release"
+version_scheme = "python-simplified-semver"
 local_scheme = "no-local-version"
